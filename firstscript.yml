@@ -1,1 +1,24 @@
-Testing4
+- name: Configure DNS on Windows systems
+  hosts: all
+  gather_facts: yes
+
+  vars:
+    dns_server_list: "{{ dns_servers.split(',') | map('trim') | list }}"
+    adapter_name: ""
+
+  tasks:
+    - name: Validate required variables
+      assert:
+        that:
+          - dns_servers is defined
+          - dns_search is defined
+          - dns_server_list | length > 0
+        fail_msg: "Both 'dns_servers' and 'dns_search' must be provided"
+
+    - name: Display DNS configuration being applied
+      debug:
+        msg:
+          - "DNS Servers: {{ dns_server_list }}"
+          - "DNS Search Domain: {{ dns_search }}"
+          - "Target Adapter: {{ adapter_name if adapter_name else 'All active adapters' }}"
+
