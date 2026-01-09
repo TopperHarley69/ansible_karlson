@@ -1,1 +1,8 @@
-get-service | where {$_.status -eq "Running"}
+- name: Get running services Windows systems
+  hosts: all
+  gather_facts: yes
+
+  tasks:
+    - name: get services
+    ansible.windows.win_shell: | 
+      get-service | where {$_.status -eq "Running"}
