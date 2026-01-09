@@ -1,4 +1,5 @@
-- hosts: windows
+- name: List services running
+  hosts: windows
   gather_facts: yes
   become: yes
 
@@ -7,3 +8,4 @@
       ansible.windows.win_powershell:
         script: |
           get-service | where {$_.status -eq "Running"}
+      register: services
