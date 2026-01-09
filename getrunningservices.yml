@@ -1,5 +1,5 @@
 - name: Get running services Windows systems
-  hosts: all
+  hosts: windows
   gather_facts: yes
 
   tasks:
