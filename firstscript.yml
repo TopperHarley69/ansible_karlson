@@ -4,7 +4,7 @@
 
   vars:
     dns_server_list: "{{ dns_servers.split(',') | map('trim') | list }}"
-    adapter_name: ""
+    adapter_name: "internet0"
 
   tasks:
     - name: Validate required variables
