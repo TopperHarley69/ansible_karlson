@@ -4,5 +4,6 @@
 
   tasks:
     - name: get services
-    ansible.windows.win_shell: | 
-      get-service | where {$_.status -eq "Running"}
+    ansible.windows.win_powershell: 
+      script: | 
+        get-service | where {$_.status -eq "Running"}
