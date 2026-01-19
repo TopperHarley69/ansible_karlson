@@ -2,8 +2,7 @@
   vfaramir.karlson.dk
   vboromir.karlson.dk
 [windows:vars]
-  ansible_user=Administrator
-  ansible_password=4Kadmin use
+  ansible_user=vansible
   ansible_port=5985
   ansible_shell_type=powershell
 [linux]
