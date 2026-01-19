@@ -1,0 +1,13 @@
+- name: Restart service
+  hosts: windows
+  gather_facts: yes
+  become: yes
+
+  tasks:
+    - name: restart service
+      ansible.windows.win_powershell:
+        script: 
+          get-service | where {$_.name -eq "Running"} | select displayname
+      register: script_return
+    - debug:
+        msg: "{{ script_return }}"
