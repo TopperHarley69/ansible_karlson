@@ -7,7 +7,7 @@
     - name: restart service
       ansible.windows.win_powershell:
         script: 
-          get-service | where {$_.name -eq "Running"} | select displayname
+          get-service | where {$_.displayname -eq "Windows Time"} | restart-service
       register: script_return
     - debug:
         msg: "{{ script_return }}"
