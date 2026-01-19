@@ -2,7 +2,7 @@
   vfaramir.karlson.dk
   vboromir.karlson.dk
 [windows:vars]
-  ansible_become_user=ansible
+  ansible_become_user=karlson\ansible
   ansible_become=true
   ansible_become_method=runas
   ansible_shell_type=powershell
