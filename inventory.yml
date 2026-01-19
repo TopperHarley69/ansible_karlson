@@ -2,8 +2,8 @@
   vfaramir.karlson.dk
   vboromir.karlson.dk
 [windows:vars]
-  ansible_user=vansible
-  become=runas
+  ansible_user=ansible
+  become=true
   ansible_port=5985
   ansible_shell_type=powershell
 [linux]
