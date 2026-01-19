@@ -8,4 +8,6 @@
       ansible.windows.win_powershell:
         script: 
           get-service | where {$_.status -eq "Running"}
-      register: services
+      register: script_return
+    - debug:
+        msg: "{{ script_return.stdout }}"
