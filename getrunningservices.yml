@@ -10,4 +10,4 @@
           get-service | where {$_.status -eq "Running"}
       register: script_return
     - debug:
-        msg: "{{ script_return.stdout }}"
+        msg: "{{ script_return }}"
