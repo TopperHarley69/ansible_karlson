@@ -6,6 +6,6 @@
   tasks:
     - name: get services
       ansible.windows.win_powershell:
-        script: |
+        script: 
           get-service | where {$_.status -eq "Running"}
       register: services
