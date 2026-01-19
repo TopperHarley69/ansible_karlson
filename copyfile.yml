@@ -6,13 +6,9 @@
   tasks:
     - name: copy file
       copy:
-       src: ~/ansible/files/test-directory-1/test-file-1.txt
-       dest: /tmp/test-file-1.t
+       src: ~/.ssh/ansible_karlson/auditsettings.ps1
+       dest: c:\temp\
       register: script_return
     - debug:
         msg: "{{ script_return }}"
-  tasks:
-    - name: Copy 'test-file-1' from Local to Remote location
-      copy:
-        src: ~/.ssh/ansible_karlson/auditsettings.ps1
-        dest: c:\temp\
+  
