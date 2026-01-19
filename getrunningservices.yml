@@ -7,7 +7,7 @@
     - name: get services
       ansible.windows.win_powershell:
         script: 
-          get-service | where {$_.status -eq "Running" | select displayname}
+          get-service | where {$_.status -eq "Running"} | select displayname
       register: script_return
     - debug:
         msg: "{{ script_return }}"
