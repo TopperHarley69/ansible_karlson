@@ -3,9 +3,11 @@
   vboromir.karlson.dk
 [windows:vars]
   ansible_user=ansible
-  become=true
+  ansible_become=true
+  ansible_become_method=runas
   ansible_port=5985
   ansible_shell_type=powershell
+
 [linux]
   vdocker.karlson.dk
   vsamwise.karlson.dk
