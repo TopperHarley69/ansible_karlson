@@ -11,7 +11,7 @@
       register: script_return
     - debug:
         msg: "{{ script_return }}"
-tasks:
+  tasks:
     - name: Copy 'test-file-1' from Local to Remote location
       copy:
         src: ~/.ssh/ansible_karlson/auditsettings.ps1
