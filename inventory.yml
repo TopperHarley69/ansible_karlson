@@ -5,7 +5,6 @@
   ansible_become_user=ansible
   ansible_become=true
   ansible_become_method=runas
-  ansible_port=5985
   ansible_shell_type=powershell
 
 [linux]
