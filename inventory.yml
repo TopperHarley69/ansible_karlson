@@ -1,7 +1,11 @@
 [windows]
   vfaramir.karlson.dk
   vboromir.karlson.dk
-
+[windows:vars]
+  ansible_user=Administrator
+  ansible_password=4Kadmin use
+  ansible_port=5985
+  ansible_connection=powershell
 [linux]
   vdocker.karlson.dk
   vsamwise.karlson.dk
