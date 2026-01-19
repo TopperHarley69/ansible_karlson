@@ -5,7 +5,7 @@
   ansible_user=Administrator
   ansible_password=4Kadmin use
   ansible_port=5985
-  ansible_connection=powershell
+  ansible_shell_type=powershell
 [linux]
   vdocker.karlson.dk
   vsamwise.karlson.dk
