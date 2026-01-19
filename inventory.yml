@@ -3,6 +3,7 @@
   vboromir.karlson.dk
 [windows:vars]
   ansible_user=vansible
+  become_method=runas
   ansible_port=5985
   ansible_shell_type=powershell
 [linux]
