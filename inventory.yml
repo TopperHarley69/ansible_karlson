@@ -1,11 +1,6 @@
 [windows]
   vfaramir.karlson.dk
   vboromir.karlson.dk
-[windows:vars]
-  remote_tmp = C:\Users\ans_user\Tmp
-  become_method = runas
-  ansible_shell_type = powershell
-  shell_type = powershell
 
 [linux]
   vdocker.karlson.dk
