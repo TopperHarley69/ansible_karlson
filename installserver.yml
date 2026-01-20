@@ -27,6 +27,7 @@
       api_password: "{{ api_password }}"
       node: "{{ node }}"
       vmid: "{{ vm_id }}"
+      hostname: "testing"
       memory: 4096
       cores: 2
       ostype: "ubuntu"
