@@ -20,7 +20,7 @@
   tasks:
 
   - name: Create empty VM
-    community.proxmox:
+    community.proxmox.proxmox:
       api_host: "{{ api_host }}"
       api_user: "{{ api_user }}"
       api_token: "{{ api_token }}"
@@ -35,18 +35,10 @@
       cores: 2
       sockets: 1
       ostype: "ubuntu"
-      scsihw: "virtio-scsi-pci"
-      net:
-        net0: "virtio,bridge=vmbr0"
-        ide:
-        ide2: "{{ iso_storage }}:{{ iso_file }},media=cdrom"
-        sata:
-          sata0: "local-lvm:32"
-        boot: "order=ide2;scsi0"
-        state: present
+      state: present
 
   - name: Start VM to begin ISO installation
-    community.proxmox:
+    community.proxmox.proxmox:
       api_host: "{{ api_host }}"
       api_user: "{{ api_user }}"
       api_token: "{{ api_token }}"
