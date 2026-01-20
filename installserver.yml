@@ -34,7 +34,7 @@
       memory: 4096
       cores: 2
       sockets: 1
-      ostype: "ubuntu"
+      ostype: "win11"
       scsihw: "virtio-scsi-pci"
       net:
         net0: "virtio,bridge=vmbr0"
