@@ -28,7 +28,7 @@
         memory: 4096
         cores: 2
         sockets: 1
-        ostype: "l26"
+        ostype: "ubuntu"
         scsihw: "virtio-scsi-pci"
         net:
           net0: "virtio,bridge=vmbr0"
