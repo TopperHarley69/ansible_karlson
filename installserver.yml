@@ -25,8 +25,7 @@
       api_token_id: "{{ api_token_id }}"
       api_token_secret: "{{ api_token_secret }}"
       api_password: "{{ api_password }}"
-      ostype: "l26"
-      media: cdrom 
+      ostype: "l26" 
       node: "{{ node }}"
       vmid: "{{ vm_id }}"
       hostname: "testing"
