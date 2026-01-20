@@ -26,8 +26,8 @@
       api_token_secret: "{{ api_token_secret }}"
       api_password: "{{ api_password }}"
       ostype: "l26"
-      ide: 
-        ide2: "{{ iso_storage }}:{{ iso_file }},media=cdrom"
+      hardware: 
+        scsi: "{{ iso_storage }}:{{ iso_file }},media=cdrom"
       node: "{{ node }}"
       vmid: "{{ vm_id }}"
       hostname: "testing"
