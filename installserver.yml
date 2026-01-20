@@ -19,15 +19,15 @@
   tasks:
 
   - name: Create empty VM
-    community.proxmox.proxmox:
+    community.general.proxmox:
       api_host: "{{ api_host }}"
       api_user: "{{ api_user }}"
       api_token_id: "{{ api_token_id }}"
       api_token_secret: "{{ api_token_secret }}"
       api_password: "{{ api_password }}"
       ostype: "l26"
-      hardware: 
-        scsi: "{{ iso_storage }}:{{ iso_file }},media=cdrom"
+      ide: 
+        ide2: "{{ iso_storage }}:{{ iso_file }},media=cdrom"
       node: "{{ node }}"
       vmid: "{{ vm_id }}"
       hostname: "testing"
@@ -37,7 +37,7 @@
       state: present
 
   - name: Start VM to begin ISO installation
-    community.proxmox.proxmox:
+    community.general.proxmox:
       api_host: "{{ api_host }}"
       api_user: "{{ api_user }}"
       api_token_id: "{{ api_token_id }}"
