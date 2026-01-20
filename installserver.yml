@@ -26,6 +26,7 @@
       api_token_secret: "{{ api_token_secret }}"
       api_password: "{{ api_password }}"
       ostype: "l26" 
+      clone: psrv1
       node: "{{ node }}"
       vmid: "{{ vm_id }}"
       hostname: "testing"
