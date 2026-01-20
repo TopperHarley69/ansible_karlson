@@ -8,6 +8,7 @@
     api_user: "root@pam"
     api_token_id: "pdm-admin-pdm"
     api_token: "ansible"
+    api_password: "I was a monkey14"
     node: "pve"
 
     vm_id: 120
