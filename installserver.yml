@@ -20,7 +20,7 @@
   tasks:
 
   - name: Create empty VM
-    community.proxmox.proxmox:
+    community.proxmox:
       api_host: "{{ api_host }}"
       api_user: "{{ api_user }}"
       api_token: "{{ api_token }}"
@@ -46,7 +46,7 @@
         state: present
 
   - name: Start VM to begin ISO installation
-    community.proxmox.proxmox:
+    community.proxmox:
       api_host: "{{ api_host }}"
       api_user: "{{ api_user }}"
       api_token: "{{ api_token }}"
