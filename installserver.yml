@@ -19,7 +19,7 @@
 
   tasks:
 
-    - name: Create empty VM
+  - name: Create empty VM
       community.general.proxmox:
         api_host: "{{ api_host }}"
         api_user: "{{ api_user }}"
