@@ -34,7 +34,7 @@
       memory: 4096
       cores: 2
       sockets: 1
-      ostype: "win11"
+      ostype: "ubuntu"
       scsihw: "virtio-scsi-pci"
       net:
         net0: "virtio,bridge=vmbr0"
@@ -46,7 +46,7 @@
         state: present
 
   - name: Start VM to begin ISO installation
-    community.general.proxmox:
+    community.proxmox.proxmox:
       api_host: "{{ api_host }}"
       api_user: "{{ api_user }}"
       api_token: "{{ api_token }}"
