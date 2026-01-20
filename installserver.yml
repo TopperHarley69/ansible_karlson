@@ -6,6 +6,7 @@
   vars:
     api_host: "https://pve.karlson.dk:8006/api2/json"
     api_user: "root@pam!pdm-admin-pdm"
+    api_token_secret: "ansible"
     api_token_id: "pdm-admin-pdm"
     api_token: "ansible"
     node: "pve"
