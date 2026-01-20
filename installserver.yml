@@ -31,7 +31,6 @@
       hostname: "testing"
       memory: 4096
       cores: 2
-      ostype: "windows"
       state: present
 
   - name: Start VM to begin ISO installation
