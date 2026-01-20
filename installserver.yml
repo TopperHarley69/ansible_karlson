@@ -20,22 +20,22 @@
   tasks:
 
   - name: Create empty VM
-      community.general.proxmox: 
-        api_host: "{{ api_host }}"
-        api_user: "{{ api_user }}"
-        api_token: "{{ api_token }}"
-        node: "{{ node }}"
-        vmid: "{{ vm_id }}"
-        name: "{{ vm_name }}"
-        memory: 4096
-        cores: 2
-        sockets: 1
-        ostype: "ubuntu"
-        scsihw: "virtio-scsi-pci"
-        net:
-          net0: "virtio,bridge=vmbr0"
+    community.general.proxmox:
+      api_host: "{{ api_host }}"
+      api_user: "{{ api_user }}"
+      api_token: "{{ api_token }}"
+      node: "{{ node }}"
+      vmid: "{{ vm_id }}"
+      name: "{{ vm_name }}"
+      memory: 4096
+      cores: 2
+      sockets: 1
+      ostype: "ubuntu"
+      scsihw: "virtio-scsi-pci"
+      net:
+        net0: "virtio,bridge=vmbr0"
         ide:
-          ide2: "{{ iso_storage }}:{{ iso_file }},media=cdrom"
+        ide2: "{{ iso_storage }}:{{ iso_file }},media=cdrom"
         sata:
           sata0: "local-lvm:32"
         boot: "order=ide2;scsi0"
