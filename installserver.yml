@@ -29,6 +29,7 @@
       node: "{{ node }}"
       vmid: "{{ vm_id }}"
       hostname: "testing"
+      ostemplate: 104
       memory: 4096
       cores: 2
       state: present
