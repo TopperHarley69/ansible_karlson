@@ -26,13 +26,12 @@
       api_token_secret: "{{ api_token_secret }}"
       api_password: "{{ api_password }}"
       ostype: "l26" 
-      clone: 104
       node: "{{ node }}"
       vmid: "{{ vm_id }}"
       hostname: "testing"
       memory: 4096
       cores: 2
-      ostype: "ubuntu"
+      ostype: "windows"
       state: present
 
   - name: Start VM to begin ISO installation
