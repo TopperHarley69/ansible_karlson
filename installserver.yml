@@ -28,10 +28,8 @@
       hostname: "testing"
       node: "{{ node }}"
       vmid: "{{ vm_id }}"
-      name: "{{ vm_name }}"
       memory: 4096
       cores: 2
-      sockets: 1
       ostype: "ubuntu"
       state: present
 
