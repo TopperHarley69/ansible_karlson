@@ -1,0 +1,50 @@
+---
+- name: Deploy VM on Proxmox
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    api_host: "https://pve.karlson.dk:8006/api2/json"
+    api_user: "root@pam!ansible"
+    api_token: "YOURTOKEN"
+    node: "pve"
+    template_id: 9000
+    vm_id: 101
+    vm_name: "ansible-test-vm"
+
+  tasks:
+    - name: Clone VM from template
+      community.general.proxmox_kvm:
+        api_host: "{{ api_host }}"
+        api_user: "{{ api_user }}"
+        api_token: "{{ api_token }}"
+        node: "{{ node }}"
+        clone: "{{ template_id }}"
+        vmid: "{{ vm_id }}"
+        name: "{{ vm_name }}"
+        full: false
+        storage: "local-lvm"
+        format: "qcow2"
+        state: present
+
+    - name: Configure VM hardware
+      community.general.proxmox_kvm:
+        api_host: "{{ api_host }}"
+        api_user: "{{ api_user }}"
+        api_token: "{{ api_token }}"
+        node: "{{ node }}"
+        vmid: "{{ vm_id }}"
+        cores: 2
+        memory: 4096
+        net:
+          net0: "virtio,bridge=vmbr0"
+        state: present
+
+    - name: Start VM
+      community.general.proxmox_kvm:
+        api_host: "{{ api_host }}"
+        api_user: "{{ api_user }}"
+        api_token: "{{ api_token }}"
+        node: "{{ node }}"
+        vmid: "{{ vm_id }}"
+        state: started
