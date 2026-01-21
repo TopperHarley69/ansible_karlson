@@ -36,7 +36,7 @@
       state: present
 
   - name: Start VM to begin ISO installation
-    community.proxmox.proxmox:
+    community.general.proxmox_kvm:
       api_host: "{{ api_host }}"
       api_user: "{{ api_user }}"
       api_token_id: "{{ api_token_id }}"
