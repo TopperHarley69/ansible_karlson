@@ -25,7 +25,7 @@
       api_token_id: "{{ api_token_id }}"
       api_token_secret: "{{ api_token_secret }}"
       api_password: "{{ api_password }}"
-      ostype: "l26" 
+      ostype: "win11" 
       node: "{{ node }}"
       vmid: "{{ vm_id }}"
       name: "{{ vm_name }}"
