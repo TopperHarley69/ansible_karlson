@@ -35,7 +35,7 @@
       ide: 
         ide2: "{{ iso_storage }}:{{ iso_image }},media=cdrom"
       memory: 4096
-      scsihw: "VMware PVSCSI" 
+      scsihw: "pvscsi" 
       scsi: 
         scsi0: "local-lvm:90"
       state: present
