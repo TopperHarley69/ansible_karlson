@@ -8,7 +8,7 @@
     api_user: "root@pam"
     api_token_secret: "e3863f22-2d05-4203-a364-c1698fd3c0d2"
     api_token_id: "ansible"
-    api_password: "I was a monkey14"
+    #api_password: "I was a monkey14"
     node: "pve"
     vm_id: 120
     vm_name: "iso-vm-test"
@@ -20,7 +20,7 @@
         api_user: "{{ api_user }}"
         api_token_id: "{{ api_token_id }}"
         api_token_secret: "{{ api_token_secret }}"
-        api_password: "{{ api_password }}"
+        #api_password: "{{ api_password }}"
         node: "{{ node }}"
         vmid: "{{ vm_id }}"
         state: absent
