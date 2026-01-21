@@ -30,7 +30,7 @@
       vmid: "{{ vm_id }}"
       hostname: "testing"
       ide: 
-        ide2: "local:iso/ubuntu-22.04-live-server-amd64.iso,media=cdrom
+        ide2: "local:iso/ubuntu-22.04-live-server-amd64.iso,media=cdrom"
       memory: 4096
       cores: 2
       state: present
