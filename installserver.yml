@@ -29,7 +29,7 @@
       node: "{{ node }}"
       vmid: "{{ vm_id }}"
       ide: 
-        ide2: "local:,media=cdrom"
+        ide2: "local:/tmp/ubuntu-24.04.3-live-server-amd64.iso,media=cdrom"
       memory: 4096
       cores: 2
       state: present
