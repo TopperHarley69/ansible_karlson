@@ -14,7 +14,7 @@
     vm_id: 120
     vm_name: "iso-vm-test"
     iso_storage: "local"
-    iso_image: "ISO/ubuntu-24.04.3-live-server-amd64.iso"
+    iso_image: "/home/torben/ISO/ubuntu-24.04.3-live-server-amd64.iso"
 
   tasks:
 
@@ -29,7 +29,7 @@
       node: "{{ node }}"
       vmid: "{{ vm_id }}"
       ide: 
-        ide2: "local:ISO/ubuntu-24.04.3-live-server-amd64.iso,media=cdrom"
+        ide2: "{{ iso_storage }}:{{ iso_image }},media=cdrom"
       memory: 4096
       cores: 2
       state: present
