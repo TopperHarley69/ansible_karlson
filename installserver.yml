@@ -9,7 +9,9 @@
     api_token_secret: "e3863f22-2d05-4203-a364-c1698fd3c0d2"
     api_token_id: "ansible"
     node: "pve"
-
+    sockets: 2 
+    cores: 2
+    cputype: "x86-64-v2-AES"
     vm_id: 120
     vm_name: "iso-vm-test"
     iso_storage: "local"
@@ -27,6 +29,9 @@
       node: "{{ node }}"
       vmid: "{{ vm_id }}"
       name: "{{ vm_name }}"
+      sockets: "{{ sockets }}" 
+      cores: "{{ cores }}" 
+      cpu: "{{ cputype }}"
       ide: 
         ide2: "{{ iso_storage }}:{{ iso_image }},media=cdrom"
       memory: 4096
