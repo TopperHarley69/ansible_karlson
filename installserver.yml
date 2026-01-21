@@ -32,6 +32,9 @@
         ide2: "{{ iso_storage }}:{{ iso_image }},media=cdrom"
       memory: 4096
       cores: 2
+      scsihw: "virtio-scsi-pci" 
+      scsi: 
+        scsi0: "local-lvm:32"
       state: present
 
   
