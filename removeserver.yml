@@ -10,7 +10,7 @@
     api_token_id: "ansible"
     api_password: "I was a monkey14"
     node: "pve"
-     vm_id: 120
+    vm_id: 120
     vm_name: "iso-vm-test"
 
   tasks:
