@@ -1,0 +1,21 @@
+---
+- name: Delete VM in Proxmox
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    api_host: "https://proxmox.example.com:8006/api2/json"
+    api_user: "root@pam!ansible"
+    api_token: "YOURTOKEN"
+    node: "pve"
+    vm_id: 120
+
+  tasks:
+    - name: Remove VM
+      community.general.proxmox_kvm:
+        api_host: "{{ api_host }}"
+        api_user: "{{ api_user }}"
+        api_token: "{{ api_token }}"
+        node: "{{ node }}"
+        vmid: "{{ vm_id }}"
+        state: absent
