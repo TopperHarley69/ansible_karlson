@@ -29,7 +29,7 @@
       node: "{{ node }}"
       vmid: "{{ vm_id }}"
       ide: 
-        ide2: "media=cdrom"
+        ide2: "locall:,media=cdrom"
       memory: 4096
       cores: 2
       state: present
