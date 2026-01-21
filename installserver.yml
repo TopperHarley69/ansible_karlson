@@ -13,7 +13,7 @@
 
     vm_id: 120
     vm_name: "iso-vm-test"
-    iso_storage: "local"
+    iso_storage: "iso"
     iso_image: "/home/torben/ISO/ubuntu-24.04.3-live-server-amd64.iso"
 
   tasks:
