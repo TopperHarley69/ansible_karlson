@@ -35,13 +35,4 @@
       cores: 2
       state: present
 
-  - name: Start VM to begin ISO installation
-    community.general.proxmox_kvm:
-      api_host: "{{ api_host }}"
-      api_user: "{{ api_user }}"
-      api_token_id: "{{ api_token_id }}"
-      api_token_secret: "{{ api_token_secret }}"
-      api_password: "{{ api_password }}"
-      node: "{{ node }}"
-      vmid: "{{ vm_id }}"
-      state: started
+  
