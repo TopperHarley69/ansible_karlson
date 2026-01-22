@@ -12,6 +12,15 @@
     vm_id: 120
     vm_name: "iso-vm-test"
 
+  - name: Start VM to begin ISO installation
+    community.general.proxmox_kvm:
+      api_host: "{{ api_host }}"
+      api_user: "{{ api_user }}"
+      api_token_id: "{{ api_token_id }}"
+      api_token_secret: "{{ api_token_secret }}"
+      node: "{{ node }}"
+      vmid: "{{ vm_id }}"
+      state: started
   tasks:
     - name: Remove VM
       community.general.proxmox_kvm:
