@@ -49,7 +49,7 @@
 #------------------------------------------------------------------------------------
 
 - name: Join Windows machine to Active Directory domain
-  hosts: all
+  hosts: deploys
   gather_facts: yes
 
   vars:
