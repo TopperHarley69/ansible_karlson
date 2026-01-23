@@ -1,5 +1,5 @@
 - name: copy file
-  hosts: windows
+  hosts: deploys
   gather_facts: yes
   become: yes
 
