@@ -97,7 +97,7 @@
       when: already_joined
 
     - name: Join the computer to Active Directory domain
-      ansible.windows.win_domain_membership:
+      ansible.windows.ad.membership:
         dns_domain_name: "{{ domain }}"
         domain_admin_user: "{{ bind_user }}"
         domain_admin_password: "{{ bind_password }}"
