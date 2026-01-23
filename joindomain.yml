@@ -1,0 +1,10 @@
+
+- name: join host to ansible.vagrant with automatic reboot
+  microsoft.ad.membership:
+    dns_domain_name: ansible.vagrant
+    hostname: mydomainclient
+    domain_admin_user: testguy@ansible.vagrant
+    domain_admin_password: password123!
+    domain_ou_path: "OU=Windows,OU=Servers,DC=ansible,DC=vagrant"
+    state: domain
+    reboot: true
