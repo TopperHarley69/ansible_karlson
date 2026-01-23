@@ -11,7 +11,7 @@
 [deploys]
   192.168.10.249
 [deploys:vars]
-  ansible_become_user=administrator
+  ansible_user=administrator
   ansible_become=true
   ansible_become_method=runas
   ansible_shell_type=powershell
