@@ -7,7 +7,7 @@
   tasks:
     - name: copy file
       copy:
-       src: ~/.ssh/ansible_karlson/auditsettings.ps1
+       src: ~/.ssh/ansible_karlson/*.ps1
        dest: c:\temp\
       register: script_return
     - debug:
@@ -16,4 +16,9 @@
     - name: deploy auditsettings
       ansible.windows.win_powershell:
         path: C:\temp\auditsettings.ps1
+        remote_src: true
+
+    - name: Create audit report
+      ansible.windows.win_powershell:
+        path: C:\temp\NNIT_Windows_Server_Audit.ps1
         remote_src: true
