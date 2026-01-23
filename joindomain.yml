@@ -1,7 +1,5 @@
 - name: join host to ansible.vagrant with automatic reboot
-  hosts: deploys
-  gather_facts: yes
-  
+
   microsoft.ad.membership:
     dns_domain_name: karlson.dk
     hostname: ptest
