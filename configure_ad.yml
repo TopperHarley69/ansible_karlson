@@ -1,0 +1,143 @@
+#------------------------------------------------------------------------------------
+#
+# FILENAME: configure_ad.yml (Windows)
+#
+# PURPOSE:
+#   This Ansible playbook joins a Windows machine to an Active Directory (AD) domain.
+#   It automates domain join operations and handles computer account placement in
+#   specific Organizational Units (OUs).
+#
+# TASKS BREAKDOWN:
+#   1. Validate Variables: Ensures all required parameters are provided.
+#   2. Check Domain Status: Verifies if the machine is already joined to a domain.
+#   3. Join Domain: Uses win_domain_membership module to join the AD domain.
+#   4. Reboot: Reboots the system after domain join (required for full integration).
+#   5. Verify Join: Confirms successful domain membership.
+#
+# VARIABLES:
+#   - domain: (Required) The fully qualified name of the Active Directory
+#     domain to join (e.g., 'nnitcorp.com').
+#   - bind_user: (Required) An AD user account with permissions to join computers
+#     to the domain (e.g., 'ad_join_account').
+#     Can be in DOMAIN\username or username@domain.com format.
+#   - bind_password: (Required) The password for the bind_user account.
+#     Can be provided directly or via a file (see examples).
+#   - ou: (Optional) The Distinguished Name of the Organizational Unit (OU) in AD
+#     where the computer account will be created.
+#     Example: 'OU=APP,OU=Server,DC=nnitcorp,DC=com'
+#   - reboot_timeout: (Optional) Maximum time to wait for reboot (default: 600 seconds)
+#
+# RUN EXAMPLES:
+#
+#   1. Basic join with inline password, placing in default Computers container:
+#   ansible-playbook configure_ad.yml -e "domain=nnitcorp.com \
+#   bind_user=NNITDeployService bind_password=SecureP@ssw0rd"
+#
+#   2. Join and place computer account in specific OU:
+#   ansible-playbook configure_ad.yml -e "domain=nnitcorp.com \
+#   bind_user=NNITDeployService bind_password=SecureP@ssw0rd \
+#   ou='OU=APP,OU=Server,DC=nnitcorp,DC=com'"
+#
+#   3. Using password from file (base64 encoded):
+#   ansible-playbook configure_ad.yml -e "domain=nnitcorp.com \
+#   bind_user=NNITDeployService bind_password={{ lookup('file', '/tmp/ad_password.txt') | b64decode }}"
+#
+#   4. Using domain\username format:
+#   ansible-playbook configure_ad.yml -e "domain=nnitcorp.com \
+#   bind_user=NNITCORP\NNITDeployService bind_password=SecureP@ssw0rd"
+#
+#------------------------------------------------------------------------------------
+
+- name: Join Windows machine to Active Directory domain
+  hosts: all
+  gather_facts: yes
+
+  vars:
+    ou: ""
+    reboot_timeout: 600
+
+  tasks:
+    - name: Validate required variables
+      assert:
+        that:
+          - domain is defined
+          - bind_user is defined
+          - bind_password is defined
+        fail_msg: "Required variables: domain, bind_user, and bind_password must be provided"
+
+    - name: Display domain join configuration (password hidden)
+      debug:
+        msg:
+          - "Domain: {{ domain }}"
+          - "User: {{ bind_user }}"
+          - "OU: {{ ou if ou else 'Default Computers container' }}"
+
+    - name: Check current domain membership
+      ansible.windows.win_shell: |
+        $cs = Get-WmiObject -Class Win32_ComputerSystem
+        if ($cs.PartOfDomain) {
+            Write-Output "Joined to: $($cs.Domain)"
+        } else {
+            Write-Output "Not joined to domain"
+        }
+      register: domain_status
+      changed_when: false
+
+    - name: Display current domain status
+      debug:
+        msg: "{{ domain_status.stdout_lines }}"
+
+    - name: Check if already joined to the target domain
+      set_fact:
+        already_joined: "{{ domain.lower() in domain_status.stdout.lower() }}"
+
+    - name: Fail if already joined to target domain
+      fail:
+        msg: "System is already joined to {{ domain }}. Please unjoin first if you want to rejoin."
+      when: already_joined
+
+    - name: Join the computer to Active Directory domain
+      ansible.windows.win_domain_membership:
+        dns_domain_name: "{{ domain }}"
+        domain_admin_user: "{{ bind_user }}"
+        domain_admin_password: "{{ bind_password }}"
+        domain_ou_path: "{{ ou if ou else omit }}"
+        state: domain
+      register: domain_join_result
+
+    - name: Display domain join result
+      debug:
+        msg: "Domain join initiated. Reboot required: {{ domain_join_result.reboot_required }}"
+
+    - name: Reboot after domain join
+      ansible.windows.win_reboot:
+        reboot_timeout: "{{ reboot_timeout }}"
+        msg: "Rebooting to complete domain join"
+      when: domain_join_result.reboot_required
+
+    - name: Wait for system to come back online
+      wait_for_connection:
+        delay: 30
+        timeout: "{{ reboot_timeout }}"
+      when: domain_join_result.reboot_required
+
+    - name: Verify domain membership after reboot
+      ansible.windows.win_shell: |
+        $cs = Get-WmiObject -Class Win32_ComputerSystem
+        if ($cs.PartOfDomain) {
+            Write-Output "Successfully joined to: $($cs.Domain)"
+            exit 0
+        } else {
+            Write-Output "Failed to join domain"
+            exit 1
+        }
+      register: verify_join
+      changed_when: false
+
+    - name: Display verification result
+      debug:
+        msg: "{{ verify_join.stdout_lines }}"
+
+    - name: Success message
+      debug:
+        msg: "Successfully joined {{ ansible_hostname }} to {{ domain }} domain"
