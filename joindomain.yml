@@ -1,10 +1,11 @@
-- name: join host to ansible.vagrant with automatic reboot
-  hosts: deploys
-  microsoft.ad.membership:
-    dns_domain_name: karlson.dk
-    hostname: ptest
-    domain_admin_user: administrator@karlson.dk
-    domain_admin_password: password123!
-    domain_ou_path: "OU=Servers,DC=karlson,DC=dk"
-    state: domain
-    reboot: true
+- hosts: deploys
+  tasks:
+  - name: join host to ansible.vagrant with automatic reboot
+    microsoft.ad.membership:
+      dns_domain_name: karlson.dk
+      hostname: ptest
+      domain_admin_user: administrator@karlson.dk
+      domain_admin_password: password123!
+      domain_ou_path: "OU=Servers,DC=karlson,DC=dk"
+      state: domain
+      reboot: true
