@@ -1,0 +1,19 @@
+- name: copy file
+  hosts: deploys
+  gather_facts: yes
+  become: yes
+  become_user: administrator
+
+  tasks:
+    - name: copy file
+      copy:
+       src: ~/.ssh/ansible_karlson/auditsettings.ps1
+       dest: c:\temp\
+      register: script_return
+    - debug:
+        msg: "{{ script_return }}"
+
+    - name: deploy auditsettings
+      ansible.windows.win_powershell:
+        path: C:\temp\auditsettings.ps1
+        remote_src: true
