@@ -12,8 +12,8 @@
     sockets: 2 
     cores: 2
     cputype: "x86-64-v2-AES"
-    vm_id: 120
-    vm_name: "iso-vm-test"
+    #vm_id: 120
+    #vm_name: "iso-vm-test"
     iso_storage: "local"
     iso_image: "iso/en-us_windows_server_2025_updated_sep_2025_x64_dvd_6d1ad20d_unattend.iso"
 
