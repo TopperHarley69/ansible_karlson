@@ -8,7 +8,13 @@
   ansible_become=true
   ansible_become_method=runas
   ansible_shell_type=powershell
-
+[deploys]
+  192.168.10.249
+[deploys:vars]
+  ansible_become=administrator
+  ansible_become=true
+  ansible_become_method=runas
+  ansible_shell_type=powershell
 [linux]
   vdocker.karlson.dk
   vsamwise.karlson.dk
