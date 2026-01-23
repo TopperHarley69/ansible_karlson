@@ -104,6 +104,7 @@
         domain_admin_user: "{{ bind_user }}"
         domain_admin_password: "{{ bind_password }}"
         domain_ou_path: "{{ ou if ou else omit }}"
+        hostname: "{{ hostname }}"
         state: domain
       register: domain_join_result
 
