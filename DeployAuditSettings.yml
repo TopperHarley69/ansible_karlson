@@ -6,7 +6,7 @@
 
   tasks:
     - name: copy file auditsettings.ps1
-      copy:
+      ansible.windows.win_copy:
        src: ~/.ssh/ansible_karlson/auditsettings.ps1
        dest: c:\temp\
       register: script_return
@@ -14,7 +14,7 @@
         msg: "{{ script_return }}"
 
     - name: copy file NNIT_Windows_Server_Audit
-      copy:
+      ansible.windows.win_copy:
        src: ~/.ssh/ansible_karlson/NNIT_Windows_Server_Audit.ps1
        dest: c:\temp\
       register: script_return
