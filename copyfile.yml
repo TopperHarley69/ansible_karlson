@@ -7,7 +7,7 @@
   tasks:
     - name: copy file
       ansible.windows.win_copy:
-       src: ~/.ssh/ansible_karlson/*.ps1
+       src: ~/.ssh/ansible_karlson/auditsettings.ps1
        dest: c:\temp\
       register: script_return
     - debug:
