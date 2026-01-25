@@ -20,5 +20,5 @@
         api_token_id: "{{ api_token_id }}"
         api_token_secret: "{{ api_token_secret }}"
         node: "{{ node }}"
-        vm_id: "{{ vm_id }}"
+        vmid: "{{ vm_id }}"
         state: absent
