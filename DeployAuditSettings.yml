@@ -27,4 +27,4 @@
         remote_src: true
 
     - name: Import create auditreport
-      import_playbook: createauditreport.yml
+      import_playbook: "createauditreport.yml"
