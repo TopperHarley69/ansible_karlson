@@ -10,7 +10,7 @@
     - name: Create a directory
       ansible.windows.win_file:
         path: "{{ mydir }}"
-        state: directoryhosts: deploys
+        state: directory
   
       - name: copy file
       ansible.windows.win_copy:
