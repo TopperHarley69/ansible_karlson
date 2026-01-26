@@ -10,8 +10,9 @@
       src: ~/.ssh/ansible_karlson/NNIT_Windows_Server_Audit.ps1
       dest: c:\temp\
       register: script_return
-  - debug:
+    - debug:
       msg: "{{ script_return }}"
+    
   - name: Create audit report
     ansible.windows.win_powershell:
       path: C:\temp\NNIT_Windows_Server_Audit.ps1
