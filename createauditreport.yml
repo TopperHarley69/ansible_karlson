@@ -1,4 +1,4 @@
-- name: copy file
+- name: create audit report
   hosts: deploys
   gather_facts: yes
   become: yes
