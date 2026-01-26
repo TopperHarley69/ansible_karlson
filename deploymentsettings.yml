@@ -1,4 +1,4 @@
-- name: copy file
+- name: Implement deployment settings
   hosts: deploys
   gather_facts: yes
   become: yes
@@ -6,7 +6,7 @@
 
   tasks:
     - name: Create directory
-      ansible.builtin.file:
+      file:
         path: c:\temp\tools
         state: directory
         register: script_return
