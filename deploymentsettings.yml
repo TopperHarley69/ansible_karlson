@@ -9,6 +9,9 @@
       ansible.builtin.file:
         path: c:\temp\tools
         state: directory
+        register: script_return
+    - debug:
+        msg: "{{ script_return }}"
         
     - name: copy file
       ansible.windows.win_copy:
