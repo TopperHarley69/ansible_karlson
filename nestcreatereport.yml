@@ -6,4 +6,4 @@
 
   tasks:
   - name: Import create auditreport
-    import_playbook: createauditreport.yml
+    ansible.builtin.import_playbook: createauditreport.yml
