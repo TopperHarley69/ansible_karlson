@@ -12,7 +12,7 @@
         path: "{{ mydir }}"
         state: directory
   
-      - name: copy file
+    - name: copy file
       ansible.windows.win_copy:
        src: ~/.ssh/ansible_karlson/LGPO.exe
        dest: c:\temp\tools
