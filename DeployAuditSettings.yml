@@ -26,7 +26,5 @@
         path: C:\temp\auditsettings.ps1
         remote_src: true
 
-    - name: Create audit report
-      ansible.windows.win_powershell:
-        path: C:\temp\NNIT_Windows_Server_Audit.ps1
-        remote_src: true
+    - name: Import create auditreport
+      import_playbook: createauditreport.yml
