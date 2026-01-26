@@ -19,3 +19,9 @@
       register: script_return
     - debug:
         msg: "{{ script_return }}"
+
+    - synchronize: 
+        src: ~/.ssh/ansible_karlson/WindowServerGroupPolicy/
+        dest: c:\temp\tools\
+        recursive: True
+        delete: False
