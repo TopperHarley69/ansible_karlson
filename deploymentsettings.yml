@@ -8,6 +8,8 @@
     - name: make folder
       ansible.builtin.file:
         path: c:\temp\tools
+        state: directory
+        
     - name: copy file
       ansible.windows.win_copy:
        src: ~/.ssh/ansible_karlson/LGPO.exe
