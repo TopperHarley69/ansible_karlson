@@ -21,7 +21,7 @@
         msg: "{{ script_return }}"
         
     - name: copy policy files
-      synchronize: 
+      ansible.windows.win_copy: 
         src: ~/.ssh/ansible_karlson/WindowServerGroupPolicy/
         dest: c:\temp\tools
     - debug:
