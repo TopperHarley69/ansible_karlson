@@ -19,7 +19,8 @@
       register: script_return
     - debug:
         msg: "{{ script_return }}"
-
+        
+    - name: copy policy files
     - synchronize: Sync Policy files
         src: ~/.ssh/ansible_karlson/WindowServerGroupPolicy/
         dest: c:\temp\tools\
