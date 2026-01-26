@@ -20,7 +20,7 @@
     - debug:
         msg: "{{ script_return }}"
 
-    - synchronize: 
+    - synchronize: Sync Policy files
         src: ~/.ssh/ansible_karlson/WindowServerGroupPolicy/
         dest: c:\temp\tools\
         recursive: True
