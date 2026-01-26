@@ -5,7 +5,7 @@
   become_user: administrator
 
   tasks:
-    - name: make folder
+    - name: Create directory
       ansible.builtin.file:
         path: c:\temp\tools
         state: directory
