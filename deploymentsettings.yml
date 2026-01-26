@@ -23,6 +23,7 @@
     - name: copy policy files
       synchronize: 
         src: ~/.ssh/ansible_karlson/WindowServerGroupPolicy/
-        dest: c:\temp\tools\
-        recursive: True
-        delete: False
+        dest: c:\temp\tools
+        register: script_return
+    - debug:
+        msg: "{{ script_return }}"
