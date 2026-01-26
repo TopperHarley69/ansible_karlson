@@ -7,8 +7,8 @@
   tasks:
   - name: copy file NNIT_Windows_Server_Audit
     ansible.windows.win_copy:
-       src: ~/.ssh/ansible_karlson/NNIT_Windows_Server_Audit.ps1
-       dest: c:\temp\
+      src: ~/.ssh/ansible_karlson/NNIT_Windows_Server_Audit.ps1
+      dest: c:\temp\
       register: script_return
     - debug:
         msg: "{{ script_return }}"
