@@ -27,4 +27,7 @@
     - debug:
         msg: "{{ script_return }}"
 
-        
+    - name: Implement policies
+      ansible.windows.win_powershell:
+        path: c:\temp\tools\WindowServerGroupPolicy\windowsserverlgpo.ps1
+        remote_src: true    
