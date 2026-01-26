@@ -1,8 +1,8 @@
 - name: DeployAuditSettings.yml
   ansible.builtin.import_playbook: DeployAuditSettings.yml
 
-- name: windowsserverlgpo.yml
-  ansible.builtin.import_playbook: windowsserverlgpo.yml
+- name: deploymentsettings.yml
+  ansible.builtin.import_playbook: deploymentsettings.yml
   
 - name: Import create auditreport
   ansible.builtin.import_playbook: createauditreport.yml
