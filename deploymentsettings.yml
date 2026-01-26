@@ -24,6 +24,5 @@
       synchronize: 
         src: ~/.ssh/ansible_karlson/WindowServerGroupPolicy/
         dest: c:\temp\tools
-        register: script_return
     - debug:
         msg: "{{ script_return }}"
