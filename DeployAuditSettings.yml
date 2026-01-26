@@ -26,6 +26,4 @@
         path: C:\temp\auditsettings.ps1
         remote_src: true
 
-    - name: Import create auditreport
-      import_playbook: createauditreport.yml
       
