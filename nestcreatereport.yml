@@ -1,8 +1,7 @@
-- name: import playbook
+
   hosts: deploys
   gather_facts: yes
   become: yes
   become_user: administrator
-  
   - name: Import create auditreport
     ansible.builtin.import_playbook: createauditreport.yml
