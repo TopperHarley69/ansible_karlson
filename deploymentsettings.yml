@@ -1,0 +1,17 @@
+- name: copy file
+  hosts: deploys
+  gather_facts: yes
+  become: yes
+  become_user: administrator
+
+  tasks:
+    - name: make folder
+      ansible.builtin.file:
+        path: c:\temp\tools
+    - name: copy file
+      ansible.windows.win_copy:
+       src: ~/.ssh/ansible_karlson/LGPO.zip
+       dest: c:\temp\
+      register: script_return
+    - debug:
+        msg: "{{ script_return }}"
