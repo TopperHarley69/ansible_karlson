@@ -4,7 +4,9 @@
   become: yes
   become_user: administrator
 
- - name: Create audit report
-   ansible.windows.win_powershell:
-     path: C:\temp\NNIT_Windows_Server_Audit.ps1
-     remote_src: true
+  tasks:
+  
+  - name: Create audit report
+    ansible.windows.win_powershell:
+      path: C:\temp\NNIT_Windows_Server_Audit.ps1
+      remote_src: true
