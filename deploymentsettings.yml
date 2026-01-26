@@ -10,8 +10,8 @@
         path: c:\temp\tools
     - name: copy file
       ansible.windows.win_copy:
-       src: ~/.ssh/ansible_karlson/LGPO.zip
-       dest: c:\temp\
+       src: ~/.ssh/ansible_karlson/LGPO.exe
+       dest: c:\temp\tools
       register: script_return
     - debug:
         msg: "{{ script_return }}"
