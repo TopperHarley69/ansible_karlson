@@ -5,7 +5,7 @@
   become: yes
   become_user: administrator
   vars:
-    mydir: 'C:\temp\tools'
+    mydir: 'C:\temp\tools\WindowServerGroupPolicy'
   tasks:
     - name: Create a directory
       ansible.windows.win_file:
@@ -23,6 +23,8 @@
     - name: copy policy files
       ansible.windows.win_copy: 
         src: ~/.ssh/ansible_karlson/WindowServerGroupPolicy/
-        dest: c:\temp\tools
+        dest: c:\temp\tools\WindowServerGroupPolicy
     - debug:
         msg: "{{ script_return }}"
+
+        
