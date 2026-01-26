@@ -1,0 +1,9 @@
+- name: import playbook
+  hosts: deploys
+  gather_facts: yes
+  become: yes
+  become_user: administrator
+
+  tasks:
+  - name: Import create auditreport
+      import_playbook: createauditreport.yml
