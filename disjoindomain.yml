@@ -5,7 +5,7 @@
 
   tasks:
   - name: disjoin host to ansible.vagrant with automatic reboot
-    microsoft.ad.membership:
+    ansible.windows.win_domain_membership:
       domain_admin_user: administrator@karlson.dk
       domain_admin_password: "4Kadmin use"
       state: unjoined
