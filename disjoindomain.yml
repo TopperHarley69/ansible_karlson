@@ -10,4 +10,4 @@
       domain_admin_password: "4Kadmin use"
       state: unjoined
       reboot: true
-      register: unjoin_result
+      
