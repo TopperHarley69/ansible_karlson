@@ -6,10 +6,8 @@
   tasks:
   - name: disjoin host to ansible.vagrant with automatic reboot
     microsoft.ad.membership:
-      dns_domain_name: karlson.dk
-      hostname: ptest
       domain_admin_user: administrator@karlson.dk
       domain_admin_password: "4Kadmin use"
-      domain_ou_path: "OU=Servers,DC=karlson,DC=dk"
-      state: domain
+      state: unjoined
       reboot: true
+      register: unjoin_result
