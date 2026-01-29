@@ -15,6 +15,13 @@
   ansible_become=true
   ansible_become_method=runas
   ansible_shell_type=powershell
+[decoms]
+  ptest3.karlson.dk
+[deploys:vars]
+  ansible_user=administrator
+  ansible_become=true
+  ansible_become_method=runas
+  ansible_shell_type=powershell
 [linux]
   vdocker.karlson.dk
   vsamwise.karlson.dk
