@@ -7,10 +7,7 @@
   tasks:
   
   
-  - name: restart service
-      ansible.windows.win_powershell:
-      script:
-        get-service | where {$_.name -eq "Windows Time"} | restart-service
-      register: script_return
-    - debug:
-        msg: "{{ script_return }}"
+  - name: Restart a service
+  ansible.windows.win_service:
+    name: spooler
+    state: restarted
