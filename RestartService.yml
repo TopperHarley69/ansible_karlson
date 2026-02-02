@@ -10,8 +10,7 @@
       group: dynamic
 
 - hosts: dynamic
-    become: true
-    gather_facts: true
+    
     - name: restart service
       ansible.windows.win_powershell:
         script: 
