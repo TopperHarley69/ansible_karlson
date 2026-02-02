@@ -10,8 +10,7 @@
       group: dynamic
 
 - hosts: dynamic
-    
-    - name: restart service
+  - name: restart service
       ansible.windows.win_powershell:
         script: 
           get-service | where {$_.name -eq "Windows Time"} | restart-service
