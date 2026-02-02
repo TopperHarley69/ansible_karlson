@@ -14,10 +14,17 @@
   gather_facts: true
   
   tasks:
-  
-  - name: restart service
-      ansible.windows.win_powershell:
-        get-service | where {$_.name -eq "Windows Time"} | restart-service
-      register: script_return
-    - debug:
-        msg: "{{ script_return }}"
+   - name: Show hostname
+    shell:
+      cmd: "hostname && who am i"
+    register: result
+
+  - name: Show result
+    debug:
+      var: result
+  #- name: restart service
+   #   ansible.windows.win_powershell:
+    #    get-service | where {$_.name -eq "Windows Time"} | restart-service
+    #  register: script_return
+    #- debug:
+    #    msg: "{{ script_return }}"
