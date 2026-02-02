@@ -1,4 +1,4 @@
-- name: Restart service
+#- name: Restart service
   hosts: localhost
   gather_facts: yes
   become: yes
