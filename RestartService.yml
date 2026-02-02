@@ -1,8 +1,17 @@
 - name: Restart service
-  hosts: windows
+  hosts: localhost
   gather_facts: yes
   become: yes
+  tasks:
 
+  - add_host:
+      hostname: "{{ target_hosts }}"
+      group: dynamic
+
+- hosts: dynamic
+  become: true
+  gather_facts: true
+  
   tasks:
     - name: restart service
       ansible.windows.win_powershell:
