@@ -10,6 +10,7 @@
       group: dynamic
 
 - hosts: dynamic
+  tasks:
   - name: restart service
       ansible.windows.win_powershell:
         script: 
