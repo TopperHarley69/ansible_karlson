@@ -8,8 +8,8 @@
   
   
   - name: restart service
-    ansible.windows.win_powershell:
-      get-service | where {$_.name -eq "Windows Time"} | restart-service
+      ansible.windows.win_powershell:
+        get-service | where {$_.name -eq "Windows Time"} | restart-service
       register: script_return
     - debug:
         msg: "{{ script_return }}"
