@@ -7,7 +7,7 @@
   - name: disjoin host to ansible.vagrant with automatic reboot
     ansible.windows.win_domain_membership:
       domain_admin_user: administrator@karlson.dk
-      domain_admin_password: "4Kadmin use"
+      domain_admin_password: "XXXX"
       state: unjoined
       reboot: true
       
