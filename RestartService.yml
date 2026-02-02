@@ -16,7 +16,7 @@
   
   tasks:
    - name: Show hostname
-    shell:
+    shell: 
       cmd: "hostname && who am i"
     register: result
 
