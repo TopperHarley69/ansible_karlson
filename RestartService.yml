@@ -1,31 +1,15 @@
 ---
-- hosts: localhosts
-  gather_facts: false
-  become: false
-  
-
-  tasks:
-  
-  - add_host:
-      hostname: "{{ target_hosts }}"
-      group: dynamic
-
-- hosts: dynamic
-  become: true
+- hosts: windows
   gather_facts: true
+  become: true
   
-  tasks:
-   - name: Show hostname
-     shell: 
-       cmd: "hostname && who am i"
-     register: result
 
-   - name: Show result
-     debug:
-       var: result
-  #- name: restart service
-   #   ansible.windows.win_powershell:
-    #    get-service | where {$_.name -eq "Windows Time"} | restart-service
-    #  register: script_return
-    #- debug:
-    #    msg: "{{ script_return }}"
+  tasks:
+  
+  
+  - name: restart service
+      ansible.windows.win_powershell:
+        get-service | where {$_.name -eq "Windows Time"} | restart-service
+      register: script_return
+    - debug:
+        msg: "{{ script_return }}"
