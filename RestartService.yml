@@ -1,13 +1,21 @@
 - name: Restart service
-  hosts: windows
+  hosts: localhosts
   gather_facts: yes
   become: yes
+  
 
   tasks:
+  - add_host:
+      hostname: "{{ target_hosts }}"
+      group: dynamic
+
+  - hosts: dynamic
+    become: true
+    gather_facts: true
     - name: restart service
       ansible.windows.win_powershell:
         script: 
-          get-service | where {$_.displayname -eq "Windows Time"} | restart-service
+          get-service | where {$_.name -eq "Windows Time"} | restart-service
       register: script_return
     - debug:
         msg: "{{ script_return }}"
