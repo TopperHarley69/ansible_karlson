@@ -1,5 +1,6 @@
 #- name: Restart service
-  hosts: localhost
+---
+- hosts: localhost
   gather_facts: yes
   become: yes
   tasks:
