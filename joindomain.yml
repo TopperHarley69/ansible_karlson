@@ -9,7 +9,7 @@
       dns_domain_name: karlson.dk
       hostname: ptest
       domain_admin_user: administrator@karlson.dk
-      domain_admin_password: "xxxx"
+      domain_admin_password: "{{ secrets.Karlson_secret }}"
       domain_ou_path: "OU=Servers,DC=karlson,DC=dk"
       state: domain
       reboot: true
