@@ -1,13 +1,13 @@
----
-- hosts: windows
-  gather_facts: true
-  become: true
-  
+- name: Restart service
+  hosts: windows
+  gather_facts: yes
+  become: yes
 
   tasks:
-  
-  
-  - name: Restart a service
-  ansible.windows.win_service:
-    name: spooler
-    state: restarted
+    - name: restart service
+      ansible.windows.win_powershell:
+        script: 
+          get-service | where {$_.displayname -eq "Windows Time"} | restart-service
+      register: script_return
+    - debug:
+        msg: "{{ script_return }}"
