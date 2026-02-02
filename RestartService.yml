@@ -12,6 +12,9 @@
 - hosts: dynamic
   become: true
   gather_facts: true
+  become_user: karlson\ansible
+  
+  become_method: runas
   
   tasks:
     - name: restart service
