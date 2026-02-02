@@ -1,7 +1,7 @@
-- name: Restart service
-  hosts: localhosts
-  gather_facts: yes
-  become: yes
+---
+- hosts: localhosts
+  gather_facts: false
+  become: false
   
 
   tasks:
@@ -9,7 +9,7 @@
       hostname: "{{ target_hosts }}"
       group: dynamic
 
-  - hosts: dynamic
+- hosts: dynamic
     become: true
     gather_facts: true
     - name: restart service
