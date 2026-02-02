@@ -20,9 +20,9 @@
        cmd: "hostname && who am i"
      register: result
 
-  - name: Show result
-    debug:
-      var: result
+   - name: Show result
+     debug:
+       var: result
   #- name: restart service
    #   ansible.windows.win_powershell:
     #    get-service | where {$_.name -eq "Windows Time"} | restart-service
