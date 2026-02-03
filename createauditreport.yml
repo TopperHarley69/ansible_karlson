@@ -29,11 +29,11 @@
   #    path: C:\temp\NNIT_Windows_Server_Audit.ps1
   #    remote_src: true
       
-  - name: List audit report
-    command: type c:\temp\*report.log
-    register: command_output
-
-  - name: Print to console
-    debug:
-      msg: "{{command_output.stdout}}"
+    - name: List audit report
+      command: type c:\temp\*report.log
+      register: command_output
+  
+    - name: Print to console
+      debug:
+        msg: "{{command_output.stdout}}"
 
