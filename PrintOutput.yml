@@ -15,10 +15,12 @@
   become_method: runas
   
   tasks: 
-  - name:  List audit report
-    command: dir
-    register: command_output
-  - name: Print to console
-    debug:
-      msg: "{{command_output}}"
 
+  - name: Read file contents on Windows
+    win_shell: |
+    Get-Content -Path "C:\Temp\ptest1.karlson.dk-2026-02-03-Audit-Report.log" -Raw
+    register: file_output
+
+  - name: Show file contents
+    debug:
+      msg: "{{ file_output.stdout }}"
