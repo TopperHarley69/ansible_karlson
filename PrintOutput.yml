@@ -24,3 +24,9 @@
   - name: Show file contents
     debug:
       msg: "{{ file_output.stdout }}"
+
+  - name: Copy output to file
+    ansible.builtin.copy:
+      content: "{{ file_output.stdout | map('regex_replace', '\\r','') | join('\n') }}"
+      dest: "{{ inventory_hostname }}.txt"
+    # delegate_to: localhost
