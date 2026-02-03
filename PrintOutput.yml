@@ -16,7 +16,7 @@
   
   tasks: 
   - name: List audit report
-    command: type "ansible.cfg"
+    command: cat "ansible.cfg"
     register: command_output
   - name: Print to console
     debug:
