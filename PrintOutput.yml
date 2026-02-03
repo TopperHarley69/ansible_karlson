@@ -23,6 +23,6 @@
 
   - name: Show file contents
     debug:
-      msg: "{{ file_output.stdout | map('regex_replace', '\\r','') | join('\n')  }}"
+      msg: "{{ file_output.stdout }}"
 
   
