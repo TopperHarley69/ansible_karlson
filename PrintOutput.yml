@@ -23,10 +23,6 @@
 
   - name: Show file contents
     debug:
-      msg: "{{ file_output.stdout }}"
+      msg: "{{ file_output.stdout | map('regex_replace', '\\r','') | join('\n')  }}"
 
-  - name: Copy output to file
-    ansible.builtin.copy:
-      content: "{{ file_output.stdout | map('regex_replace', '\\r','') | join('\n') }}"
-      dest: "test.txt"
-    # delegate_to: localhost
+  
