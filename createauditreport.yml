@@ -31,5 +31,6 @@
       
   - name: List audit report
     ansible.windows.win_powershell:
-      path: C:\temp\NNIT_Windows_Server_Audit.ps1
-      remote_src: true
+      script: 
+          get-content *Audit-Report.log
+      register: script_return
