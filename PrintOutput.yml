@@ -15,10 +15,10 @@
   become_method: runas
   
   tasks: 
-#  - name:  List audit report
-#    command: cat "ansible.cfg"
-#    register: command_output
+  - name:  List audit report
+    command: cat "ansible.cfg"
+    register: command_output
   - name: Print to console
     debug:
-      msg: "{{command_output.stdout}}"
+      msg: "{{command_output}}"
 
