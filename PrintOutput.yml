@@ -12,14 +12,13 @@
   become: false
   gather_facts: false
   become_user: administrator
-  
   become_method: runas
-
-  tasks:
+  
+  tasks: 
   - name: List audit report
     command: type "c:\temp\ptest1.karlson.dk-2026-02-03-Audit-Report.log"
     register: command_output
-  #- name: Print to console
-  #  debug:
-  #    msg: "{{command_output.stdout}}"
+  - name: Print to console
+    debug:
+      msg: "{{command_output.stdout}}"
 
