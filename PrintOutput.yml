@@ -14,7 +14,7 @@
   become_user: administrator
   become_method: runas
   
-#  tasks: 
+  tasks: 
 #  - name:  List audit report
 #    command: cat "ansible.cfg"
 #    register: command_output
