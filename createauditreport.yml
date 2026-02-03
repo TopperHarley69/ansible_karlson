@@ -28,7 +28,6 @@
   #  ansible.windows.win_powershell:
   #    path: C:\temp\NNIT_Windows_Server_Audit.ps1
   #    remote_src: true
-  
   - name: List audit report
   #- name: List audit report
     command: type c:\temp\*report.log
