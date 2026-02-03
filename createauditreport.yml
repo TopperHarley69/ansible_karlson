@@ -33,4 +33,4 @@
     ansible.windows.win_powershell:
       script: 
           get-content *Audit-Report.log
-      register: script_return
+      #register: script_return
