@@ -33,7 +33,7 @@
     command: type c:\temp\*report.log
     register: command_output
 
-    - name: Print to console
-      debug:
-        msg: "{{command_output.stdout}}"
+  - name: Print to console
+    debug:
+      msg: "{{command_output.stdout}}"
 
