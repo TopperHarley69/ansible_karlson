@@ -10,11 +10,11 @@
       group: dynamic
 
 - hosts: dynamic
-  become: true
-  gather_facts: true
-  become_user: karlson\ansible
+  become: false
+  gather_facts: false
+  #become_user: karlson\ansible
   
-  become_method: runas
+  #become_method: runas
   
   tasks:
     - name: restart service
