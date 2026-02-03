@@ -1,8 +1,19 @@
-- name: create audit report
-  hosts: deploys
-  gather_facts: yes
-  become: yes
+---
+- hosts: localhost
+  gather_facts: false
+  become: false
+  tasks:
+
+  - add_host:
+      hostname: "{{ target_hosts }}"
+      group: dynamic
+
+- hosts: dynamic
+  become: false
+  gather_facts: false
   become_user: administrator
+  
+  become_method: runas
 
   tasks:
   - name: copy file NNIT_Windows_Server_Audit
