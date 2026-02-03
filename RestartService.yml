@@ -12,7 +12,7 @@
 - hosts: dynamic
   become: false
   gather_facts: false
-  become_user: karlson\ansible
+  become_user: administrator
   
   become_method: runas
   
