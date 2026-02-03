@@ -17,7 +17,7 @@
   tasks: 
 
   - name: Read file contents on Windows
-    win_shell: 
+    win_shell: |
       Get-Content -Path "C:\Temp\ptest1.karlson.dk-2026-02-03-Audit-Report.log" -Raw
       register: file_output
 
