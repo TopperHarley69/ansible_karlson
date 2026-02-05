@@ -16,6 +16,7 @@
     #vm_name: "iso-vm-test"
     iso_storage: "local"
     iso_image: "iso/en-us_windows_server_2022_latest.iso"
+    unattend_image: "iso/autounattend.iso"
 
   tasks:
 
@@ -33,7 +34,8 @@
       cores: "{{ cores }}" 
       cpu: "{{ cputype }}"
       ide: 
-        ide2: "{{ iso_storage }}:{{ iso_image }},media=cdrom"
+        ide2: "{{ iso_storage }}:{{ unattend_image }},media=cdrom"
+        ide3: "{{ iso_storage }}:{{ iso_image }},media=cdrom"
       net: 
         net0: "vmxnet3,bridge=vmbr0"
       memory: 4096
