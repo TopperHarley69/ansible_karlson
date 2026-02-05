@@ -16,7 +16,7 @@
     #vm_name: "iso-vm-test"
     iso_storage: "local"
     iso_image: "iso/en-us_windows_server_2022_latest_orig.iso"
-    unattend_image: "iso/autounattend.iso"
+    unattend_image: "iso/autounattend_windows2022.iso"
 
   tasks:
 
