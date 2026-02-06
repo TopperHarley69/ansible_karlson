@@ -16,7 +16,7 @@
   ansible_become_method=runas
   ansible_shell_type=powershell
 [decoms]
-  192.168.10.245
+  192.168.10.243
 [deploys:vars]
   ansible_user=administrator
   ansible_become=true
