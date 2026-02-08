@@ -6,7 +6,7 @@
     - community.vmware
 
   vars:
-    vcenter_hostname: "vsphere.karlson.dk"
+    vcenter_hostname: "vshires.karlson.dk"
     vcenter_username: "karlson\administrator"
     #vcenter_password: "YourPassword"
     datacenter_name: "Lyngby"
