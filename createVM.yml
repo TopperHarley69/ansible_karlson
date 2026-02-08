@@ -1,6 +1,6 @@
 ---
 - name: Create VMware VM
-  hosts: localhost
+  hosts: windows
   gather_facts: false
   collections:
     - community.vmware
