@@ -30,6 +30,6 @@
         template: "{{ vm_template }}"
         datastore: "{{ datastore_name }}"
 
-        networksnetworks: - name: "{{ vm_network }}" 
+        networks: - name: "{{ vm_network }}" 
 	state: poweredon 
 	register: deploy
