@@ -6,8 +6,8 @@
   vars:
     api_host: "pve.karlson.dk"
     api_user: "root@pam!TopperH69"
-    api_token_secret: "cdabfd22-7573-483c-aadb-415d05ed237a"
-    api_token_id: "TopperH69"
+    #api_token_secret: "cdabfd22-7573-483c-aadb-415d05ed237a"
+    #api_token_id: "TopperH69"
     node: "pve"
     sockets: 2 
     cores: 2
