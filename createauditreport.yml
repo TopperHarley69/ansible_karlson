@@ -3,11 +3,7 @@
   gather_facts: false
   become: false
   tasks:
- 
-  become: false
-  gather_facts: false
   become_user: administrator
-  
   become_method: runas
 
   tasks:
