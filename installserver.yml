@@ -5,8 +5,8 @@
 
   vars:
     api_host: "pve.karlson.dk"
-    api_user: "root@pam"
-    api_token_secret: "e3863f22-2d05-4203-a364-c1698fd3c0d2"
+    api_user: "root@pam!TopperH69"
+    api_token_secret: "cdabfd22-7573-483c-aadb-415d05ed237a"
     api_token_id: "ansible"
     node: "pve"
     sockets: 2 
