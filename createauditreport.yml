@@ -5,8 +5,6 @@
   tasks:
   become_user: administrator
   become_method: runas
-
-  tasks:
   - name: copy file NNIT_Windows_Server_Audit
     ansible.windows.win_copy:
       src: ~/.ssh/ansible_karlson/NNIT_Windows_Server_Audit.ps1
