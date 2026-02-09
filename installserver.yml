@@ -8,6 +8,7 @@
     api_user: "root@pam"
     api_token_secret: "3b56f351-4cb5-4be9-8dcb-3715958070d1"
     api_token_id: "ansible"
+    api_ansible_become: false
     node: "pve"
     sockets: 2 
     cores: 2
