@@ -1,14 +1,9 @@
 ---
-- hosts: localhost
+- hosts: deploys
   gather_facts: false
   become: false
   tasks:
-
-  - add_host:
-      hostname: "{{ target_hosts }}"
-      group: dynamic
-
-- hosts: dynamic
+ 
   become: false
   gather_facts: false
   become_user: administrator
