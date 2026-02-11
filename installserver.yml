@@ -17,9 +17,7 @@
     iso_storage: "local"
     iso_image: "iso/en-us_windows_server_2025_latest.iso"
     unattend_image: "iso/autounattend_windows2025.iso"
-
   tasks:
-
   - name: Create empty VM
     community.proxmox.proxmox:
     #community.general.proxmox_kvm:
