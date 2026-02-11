@@ -34,7 +34,7 @@
       cpu: "{{ cputype }}"
       ide: 
         ide2: "{{ iso_storage }}:{{ iso_image }},media=cdrom"
-        ide3: "{{ iso_storage }}:{{ unattend_image }},media=cdrom"
+        #ide3: "{{ iso_storage }}:{{ unattend_image }},media=cdrom"
       net: 
         net0: "vmxnet3,bridge=vmbr0"
       memory: 4096
