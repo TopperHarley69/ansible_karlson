@@ -17,31 +17,31 @@
     iso_storage: "local"
     iso_image: "iso/en-us_windows_server_2025_latest.iso"
     unattend_image: "iso/autounattend_windows2025.iso"
-  tasks:
-  - name: Create empty VM
-    community.proxmox.proxmox:
+  #tasks:
+  #- name: Create empty VM
+  #  community.proxmox.proxmox:
     #community.general.proxmox_kvm:
-      api_host: "{{ api_host }}"
-      api_user: "{{ api_user }}"
-      api_token_id: "{{ api_token_id }}"
-      api_token_secret: "{{ api_token_secret }}"
-      ostype: "win11" 
-      node: "{{ node }}"
-      vmid: "{{ vm_id }}"
-      name: "{{ vm_name }}"
-      sockets: "{{ sockets }}" 
-      cores: "{{ cores }}" 
-      cpu: "{{ cputype }}"
-      ide: 
-        ide2: "{{ iso_storage }}:{{ iso_image }},media=cdrom"
-        ide3: "{{ iso_storage }}:{{ unattend_image }},media=cdrom"
-      net: 
-        net0: "vmxnet3,bridge=vmbr0"
-      memory: 4096
-      scsihw: "pvscsi" 
-      scsi: 
-        scsi0: "local-lvm:90"
-      state: present
+  #    api_host: "{{ api_host }}"
+  #    api_user: "{{ api_user }}"
+  #    api_token_id: "{{ api_token_id }}"
+  #    api_token_secret: "{{ api_token_secret }}"
+  #    ostype: "win11" 
+  #    node: "{{ node }}"
+  #    vmid: "{{ vm_id }}"
+  #    name: "{{ vm_name }}"
+  #    sockets: "{{ sockets }}" 
+  #    cores: "{{ cores }}" 
+  #   cpu: "{{ cputype }}"
+  #    ide: 
+  #      ide2: "{{ iso_storage }}:{{ iso_image }},media=cdrom"
+  #      ide3: "{{ iso_storage }}:{{ unattend_image }},media=cdrom"
+  #    net: 
+  #      net0: "vmxnet3,bridge=vmbr0"
+  #    memory: 4096
+  #    scsihw: "pvscsi" 
+  #    scsi: 
+  #      scsi0: "local-lvm:90"
+  #    state: present
 
   - name: Start VM to begin ISO installation
     community.proxmox.proxmox:
