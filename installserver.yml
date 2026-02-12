@@ -1,6 +1,6 @@
 ---
 - name: Create Proxmox VM from ISO
-  hosts: localhost
+  hosts: proxmox
   gather_facts: false
 
   vars:
