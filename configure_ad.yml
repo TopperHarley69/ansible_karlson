@@ -50,7 +50,7 @@
 
 - name: Join Windows machine to Active Directory domain
   hosts: deploys
-  gather_facts: yes
+  gather_facts: no
   become: yes
   become_user: administrator
   
