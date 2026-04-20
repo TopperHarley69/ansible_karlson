@@ -4,10 +4,10 @@
   gather_facts: false
 
   vars:
-    api_host: "pve.karlson.dk"
-    api_user: "root@pam"
-    #api_token_secret: "b614f623-6259-43d9-b722-061c7dc1971b"
-    #api_token_id: "ansible"
+    api_host: "proxmox.karlson.dk"
+    api_user: "root@pam!ansible"
+    api_token_secret: "984ff08e-b659-4817-8823-b7b037b0c5fb"
+    api_token_id: "ansible"
     api_password: "I was a monkey14"
     node: "pve"
     sockets: 2 
@@ -24,9 +24,9 @@
     community.general.proxmox_kvm:
       api_host: "{{ api_host }}"
       api_user: "{{ api_user }}"
-      #api_token_id: "{{ api_token_id }}"
-      #api_token_secret: "{{ api_token_secret }}"
-      api_password: "{{ api_password }}"
+      api_token_id: "{{ api_token_id }}"
+      api_token_secret: "{{ api_token_secret }}"
+      #api_password: "{{ api_password }}"
       ostype: "win11" 
       node: "{{ node }}"
       vmid: "{{ vm_id }}"
