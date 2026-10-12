@@ -1,1 +1,16 @@
+- name: Install Edge
+  hosts: deploys
+  gather_facts: yes
+  become: yes
+  become_user: administrator
 
+  tasks:
+    - name: copy file
+      ansible.windows.win_copy:
+       src: \\fileserver\Downloads\SW\Edge\MicrosoftEdgeEnterpriseX64.msi
+       dest: c:\temp\
+      register: script_return
+    - name: Install Edge
+      
+    - debug:
+        msg: "{{ script_return }}"
