@@ -2,8 +2,7 @@
 - name: Install Edge
   hosts: deploys
   gather_facts: no
-  tasks:
-    - name: Download Edge
+     - name: Download Edge
       ansible.builtin.get_url:
         url: https://go.microsoft.com/fwlink/?linkid=2093437
         dest: /var/lib/software/MicrosoftEdgeEnterpriseX64.msi
