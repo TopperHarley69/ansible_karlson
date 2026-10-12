@@ -1,5 +1,5 @@
 ---
-- hosts: windows
+- hosts: deploys
   gather_facts: false
   become: false
  
