@@ -1,14 +1,14 @@
-﻿########################################################################################################################
 ########################################################################################################################
-### NNIT_Windows_Server_Audit ###
+########################################################################################################################
+### NNIT_Windows_Server_Audit / Aeven_Windows_Server_Audit ###
 ### Audit-Script
 ### Author: RRII
-### Approver: MLSJ
-### Date: 2022.03.10
-### Version: 1.3.1
+### Approver: TBKL
+### Date: 2026.09.24
+### Version: 1.4.1
 ### PRD-089
 
-param ([bool]$AntiVirus=$true,$Backup=$true,$Monitoring=$true,$FireWall=$true,$HPUD=$True,$HPSA=$True,$License=$True,$Policies=$True)
+param ([bool]$AntiVirus=$true,$Backup=$true,$Monitoring=$true,$FireWall=$true,$HPUD=$True,$HPSA=$True,$License=$True,$Policies=$True,$commvault_proceed_install=$true)
 
 ### Changelog ###
 ### Version, Date, Initials, Change Description, Approver
@@ -16,7 +16,16 @@ param ([bool]$AntiVirus=$true,$Backup=$true,$Monitoring=$true,$FireWall=$true,$H
 ### 1.1, 2020.09.01, TBKL, Added possibility for exceptions in checks ###
 ### 1.2, 2020.11.27, TBKL, Codereview ITINC0009975444 ###
 ### 1.3, 2022.02.28, RRII, Added Windows 2022, CodeReview ITINC0012296142 ###
-$ChangeLog = "### 1.3.1, 2022.03.10, RRII, Minor - Add pylibs3 directory check of HP-SA ###"
+### 1.3.1, 2022.03.10, RRII, Minor - Add pylibs3 directory check of HP-SA ###
+### 1.3.2, 2023.01.22, CLIR, Fix bug so Firewall rules only look at active store -PolicyStore ActiveStore
+	###$firewallStateFalse = Get-NetFirewallProfile -PolicyStore ActiveStore | Select-Object Enabled, Name | where-object Enabled -EQ False
+	###$firewallStateTrue = Get-NetFirewallProfile -PolicyStore ActiveStore | Select-Object Enabled, Name | where-object Enabled -EQ False
+### 1.3.3 2023.02.23, TBKL, Added support for Microsoft Defender
+### 1.3.4 2023.08.31, TBKL, Added support for Commvault Snapshot on VM as approved option
+### 1.3.5 2024.07.31, TBKL, Defender check updated
+### 1.3.6 2024.08.22, TBKL and RRII, Module Author corrected to RRII, Codereview REQT3306220
+### 1.4.0 2025.06.04, RRII, Naming updated to Aeven where possible
+$ChangeLog = "### 1.4.1 2026.09.24, TBKL Support for Trend Micro updated. New VMWare models added. Code Review REQT5301633"
 
 
 ########################################################################################################################
@@ -24,7 +33,7 @@ $ChangeLog = "### 1.3.1, 2022.03.10, RRII, Minor - Add pylibs3 directory check o
 ### Module Start ###
 ### Prepare Audit Report ###
 ### Audit-Script
-### Author: OTDU
+### Author: RRII
 ### Approver: TBKL
 ### Date: 2019.06.21
 ### Version: 1.1
@@ -130,33 +139,35 @@ else
 ### Module Start ###
 ### Windows Server Installed After New Deployment settings ###
 ### Audit-Script
-### Author: OTDU
+### Author: RRII
 ### Approver: TBKL
-### Date: 2019.05.24
-### Version: 1.0
+### Date: 2025.06.04
+### Version: 1.1
 ### PRD-089
 
 ### Changelog ###
 ### Version, Date, Initials, Change Description
 ### 1.0, 2019.05.24, OTDU, New Module
+### 1.1, 2025.06.04, RRII, Naming updated to Aeven where possible
+
 
 $textForReport = [System.Collections.ArrayList]@()
 $textForReportInfo = [System.Collections.ArrayList]@()
 
 $textForReportInfo.Add("## Starting Windows Server Installed After New Deployment settings ##") | Out-Null
 
-If(Test-Path -Path HKLM:\Software\NNIT\Deployed_with\NNIT_Deployment_Settings_for_Windows_Servers)
+If((Test-Path -Path HKLM:\Software\NNIT\Deployed_with\NNIT_Deployment_Settings_for_Windows_Servers) -or (Test-Path -Path HKLM:\Software\Aeven\Deployed_with\Aeven_Deployment_Settings_for_Windows_Servers))
 {
-	$resultDeploymentSettings = "## OK ## This Server is deployed using[NNIT_Deployment_Settings_for_Windows_Servers]"
-	$textForReportInfo.Add("## OK ## This Server is deployed using the Software Policy [NNIT_Deployment_Settings_for_Windows_Servers]") | Out-Null
-	$textForReport.Add("## OK ## This Server is deployed using the Software Policy [NNIT_Deployment_Settings_for_Windows_Servers]") | Out-Null
+	$resultDeploymentSettings = "## OK ## This Server is deployed using[Aeven_Deployment_Settings_for_Windows_Servers]"
+	$textForReportInfo.Add("## OK ## This Server is deployed using the Software Policy [Aeven_Deployment_Settings_for_Windows_Servers]") | Out-Null
+	$textForReport.Add("## OK ## This Server is deployed using the Software Policy [Aeven_Deployment_Settings_for_Windows_Servers]") | Out-Null
 }
 
 Else
 {
-	$resultDeploymentSettings = "## OK Info ## This Server is not deployed using[NNIT_Deployment_Settings_for_Windows_Servers]"
-	$textForReport.Add("## OK Info ## This Server is not deployed using the Software Policy [NNIT_Deployment_Settings_for_Windows_Servers]") | Out-Null
-	$textForReportInfo.Add("## OK Info ## This Server is not deployed using the Software Policy [NNIT_Deployment_Settings_for_Windows_Servers]") | Out-Null
+	$resultDeploymentSettings = "## OK Info ## This Server is not deployed using[Aeven_Deployment_Settings_for_Windows_Servers]"
+	$textForReport.Add("## OK Info ## This Server is not deployed using the Software Policy [Aeven_Deployment_Settings_for_Windows_Servers]") | Out-Null
+	$textForReportInfo.Add("## OK Info ## This Server is not deployed using the Software Policy [Aeven_Deployment_Settings_for_Windows_Servers]") | Out-Null
 }
 
 $textForReportInfo.Add("") | Out-Null
@@ -172,7 +183,7 @@ $AuditResults.Add($resultDeploymentSettings) | Out-Null
 ### Module Start ###
 ### System Info and Updated History ###
 ### Audit Module
-### Author: OTDU
+### Author: RRII
 ### Approver: TBKL
 ### Date: 2019.05.24
 ### Version: 1.0
@@ -231,7 +242,7 @@ $textForReportInfo | out-file $AuditReportInfo -Append
 ### Module Start ###
 ### Firewalls Enabled ###
 ### Audit Module
-### Author: OTDU
+### Author: RRII
 ### Approver: TBKL
 ### Date: 2020.07.04
 ### Version: 1.1
@@ -250,8 +261,8 @@ $textForReportInfo.Add("## Starting Firewall Enabled ##") | Out-Null
 
 ### Check firewall status ###
 
-$firewallStateTrue = Get-NetFirewallProfile | Select-Object Enabled, Name | where-object Enabled -EQ True
-$firewallStateFalse = Get-NetFirewallProfile | Select-Object Enabled, Name | where-object Enabled -EQ False
+$firewallStateTrue = Get-NetFirewallProfile -PolicyStore ActiveStore | Select-Object Enabled, Name | where-object Enabled -EQ True
+$firewallStateFalse = Get-NetFirewallProfile -PolicyStore ActiveStore | Select-Object Enabled, Name | where-object Enabled -EQ False
 
 if($firewallStateTrue -Match "True" -and $firewallStateFalse -notcontains "False")
 {
@@ -321,7 +332,7 @@ $EnabledFirewallRules += Get-NetFirewallRule -Group "DiagTrack*" | where-object 
     {
 $EnabledFirewallRules = [System.Collections.ArrayList]@()
 $EnabledFirewallRules += Get-NetFirewallRule -DisplayName "Cast to Device functionality*" | where-object -Property "Enabled" -eq -value "True" | Select-Object DisplayName, Enabled
-$EnabledFirewallRules += Get-NetFirewallRule -Group "@{Microsoft.Windows.Cortana*" | where-object -Property "Enabled" -eq -value "True" | Select-Object DisplayName, Enabled
+#$EnabledFirewallRules += Get-NetFirewallRule -Group "@{Microsoft.Windows.Cortana*" | where-object -Property "Enabled" -eq -value "True" | Select-Object DisplayName, Enabled
 $EnabledFirewallRules += Get-NetFirewallRule -DisplayName "Alljoyn Router*" | where-object -Property "Enabled" -eq -value "True" | Select-Object DisplayName, Enabled
 $EnabledFirewallRules += Get-NetFirewallRule -Group "DiagTrack*" | where-object -Property "Enabled" -eq -value "True" | Select-Object DisplayName, Enabled
 $EnabledFirewallRules += Get-NetFirewallRule -Group "@{Microsoft.XboxGame*" | where-object -Property "Enabled" -eq -value "True" | Select-Object DisplayName, Enabled
@@ -610,10 +621,10 @@ $AuditResults.Add($textForReport) | Out-Null
 ### Module Start ###
 ### Licens Status ###
 ### Audit Module
-### Author: OTDU
+### Author: RRII
 ### Approver: TBKL
-### Date: 2019.05.24
-### Version: 1.0
+### Date: 2020.07.04
+### Version: 1.1
 ### PRD-089
 
 ### Changelog ###
@@ -661,7 +672,7 @@ $AuditResults.Add($resultLicense) | Out-Null
 ### Module Start ###
 ### Get Installed Software ###
 ### Audit Module
-### Author: OTDU
+### Author: RRII
 ### Approver: TBKL
 ### Date: 2019.05.24
 ### Version: 1.0
@@ -772,10 +783,10 @@ $AuditResults.Add($resultHPSA) | Out-Null
 ### Module Start ###
 ### HP UD Agent ###
 ### Audit Module
-### Author: OTDU
+### Author: RRII
 ### Approver: TBKL
-### Date: 2019.05.24
-### Version: 1.0
+### Date: 2020.07.04
+### Version: 1.1
 ### PRD-089
 
 ### Changelog ###
@@ -834,10 +845,10 @@ $AuditResults.Add($resultHPUD) | Out-Null
 ### Module Start ###
 ### Monitoring Agent ###
 ### Audit Module
-### Author: OTDU
+### Author: RRII
 ### Approver: TBKL
-### Date: 2019.05.24
-### Version: 1.1
+### Date: 2021.04.12
+### Version: 1.4
 ### PRD-089
 
 ### Changelog ###
@@ -907,7 +918,7 @@ if($installedHPOM -match "Operations-agent" -and (Test-Path -Path "HKLM:\softwar
 
 $installedSCOM = $InstalledSoftware | where-object DisplayName -Like "*Microsoft Monitoring Agent*"
 #$serviceSCOM = Get-Service -DisplayName "Microsoft Monitoring Agent" | where-object Status -eq "Running"
-if($installedSCOM -match "Monitoring Agent" -and  $null -ne (Get-Service -DisplayName "Microsoft Monitoring Agent" | where-object Status -eq "Running") )
+if($installedSCOM -match "Monitoring Agent" -and  $null -ne (Get-Service -DisplayName "Microsoft Monitoring Agent" | where-object Status -eq "Running") -and (-not $installedHPOM )  )
 {
 	$lastTimeWritten = [System.Collections.ArrayList]@()
 	$WrittenDate = Get-EventLog -LogName "Operations Manager" -Newest 1 -InstanceId 6022 | Select-Object TimeWritten | format-table -HideTableHeaders | Out-String
@@ -961,17 +972,17 @@ $AuditResults.Add($resultMon) | Out-Null
 ### Module Start ###
 ### VMware Tools ###
 ### Audit Module
-### Author: OTDU
+### Author: RRII
 ### Approver: TBKL
-### Date: 2019.05.24
-### Version: 1.0
+### Date: 2026.08.11
+### Version: 1.2
 ### PRD-089
 
 ### Changelog ###
 ### Version, Date, Initials, Change Description
 ### 1.0, 2019.05.24, OTDU, New Module
 ### 1.1, 2019.10.03, TBKL, Machine type changed from "Virtual" to "VMWare Virtual" to avoid failed check for other virtual platforms
-
+### 1.2, 2026.08.11, TBKL, Machine type  "VMWare7,1" to "VMWare20,1" added
 $textForReport = [System.Collections.ArrayList]@()
 $textForReportInfo = [System.Collections.ArrayList]@()
 
@@ -1009,7 +1020,16 @@ Function Get-MachineType
 
                     # Check for VMware Machine Type
                     "VMware Virtual Platform" {
-                        $MachineType="VM"
+                        $MachineType="VMWare Virtual"
+                        }
+
+                    # Check for VMware Machine Type
+                    "VMware7,1" {
+                        $MachineType="VMWare Virtual"
+                        }
+                     # Check for VMware Machine Type
+                    "VMware20,1" {
+                        $MachineType="VMWare Virtual"
                         }
 
                     # Check for Oracle VM Machine Type
@@ -1089,10 +1109,10 @@ $AuditResults.Add($resultVmtools) | Out-Null
 ### Module Start ###
 ### AV installeret ###
 ### Audit Module
-### Author: OTDU
+### Author: RRII
 ### Approver: TBKL
-### Date: 2019.06.21
-### Version: 1.0
+### Date: 2026.08.11
+### Version: 1.9
 ### PRD-089
 
 ### Changelog ###
@@ -1103,23 +1123,21 @@ $AuditResults.Add($resultVmtools) | Out-Null
 ### 1.3, 2019.11.06, TBKL, Section for Trend Micro corrected to account for different date formats
 ### 1.4. 2020.07.04, TBKL, Add option to accept failure of check
 ### 1.5. 2020.11.26, TBKL, Check for ePO server configuration added
-### 1.6, 2021.20.09, TBKL, Cisco check modified to support latest version
+### 1.6, 2021.09.20, TBKL, Cisco check modified to support latest version
+### 1.7, 2023.02.23, TBKL, Support added for Microsoft Defender
+### 1.8, 2024.07.31, TBKL, Defender check updated
+### 1.9, 2026.08.11, TBKL, Support for TrendAI added
+
 
 $textForReport = [System.Collections.ArrayList]@()
 $textForReportInfo = [System.Collections.ArrayList]@()
 
 $textForReportInfo.Add("## Starting AV Installed script ##") | Out-Null
 
-$installedAV = $InstalledSoftware | Where-Object { $_.DisplayName -like "*Enterprise*" -or $_.DisplayName -like "*Endpoint*" -or $_.DisplayName -like "*Cisco AMP*"  -or $_.DisplayName -like "*Traps*" -or $_.DisplayName -like "*McAfee Agent*" -or $_.DisplayName -like "*Trend Micro*" } | format-table -HideTableHeaders | Out-String
-
-if (-not $InstalledAV)
-{
-    $found = (get-service -name WinDefend -ErrorAction Ignore | where {$_.Status -eq "Running"}| Measure-Object).Count
-    if ($found -eq 1)
-    {
-        $InstalledAV = "Microsoft Defender"
-    }
-}
+# $installedAV = $InstalledSoftware | Where-Object { $_.DisplayName -like "*Enterprise*" -or $_.DisplayName -like "*Endpoint*" -or $_.DisplayName -like "*Cisco AMP*"  -or $_.DisplayName -like "*Traps*" -or $_.DisplayName -like "*McAfee Agent*" -or $_.DisplayName -like "*Trend Micro*" -or $_.DisplayName -like "*TrendAI*"  } | format-table -HideTableHeaders | Out-String
+# 2022-12-20	DEDZ	updated for Trellix-Mcafee: $_.DisplayName -like "*Trellix Agent Service*"
+$installedAV = $InstalledSoftware | Where-Object { $_.DisplayName -like "*Enterprise*" -or $_.DisplayName -like "*Endpoint*" -or $_.DisplayName -like "*Cisco AMP*"  -or $_.DisplayName -like "*Traps*" -or $_.DisplayName -like "*Trellix Agent Service*" -or $_.DisplayName -like "*Trend Micro*" -or $_.DisplayName -like "*TrendAI*"} | format-table -HideTableHeaders | Out-String
+$AVPrimary = $false
 
 if($installedAV -match "Traps" -and (Test-Path -Path "HKLM:\SOFTWARE\Palo Alto Networks\Traps"))
 {
@@ -1165,6 +1183,7 @@ if($installedAV -match "Enterprise" -and (Test-Path -Path HKLM:\SOFTWARE\Wow6432
         $textForReport.Add("## OK(Info) ## Installed but not updated within the last 2 days, last updated " + $avavDatDate ) | Out-Null
         $textForReportInfo.Add($mcafeeEnterpriseInstalled + "Installed but not updated within the last 2 days, last updated " + $avavDatDate ) | Out-Null
     }
+    $AVPrimary = $true
 }
 
 if($installedAV -match "Endpoint" -and (Test-Path -Path HKLM:\SOFTWARE\McAfee\AVSolution\DS\DS))
@@ -1177,8 +1196,8 @@ if($installedAV -match "Endpoint" -and (Test-Path -Path HKLM:\SOFTWARE\McAfee\AV
 
     if ($avCreationDate -ge $checkDate)
     {
-        $resultAV = "## OK ## Mcafee Endpoint Installed and updated. ePO configuration" + $ePOServer
-        $textForReport.Add("## OK ## Mcafee Endpoint Installed and updated. ePO configuration - " + $ePOServer) | Out-Null
+        $resultAV = "## OK ## Trellix-Mcafee Endpoint Installed and updated. ePO configuration" + $ePOServer
+        $textForReport.Add("## OK ## Trellix-Mcafee Endpoint Installed and updated. ePO configuration - " + $ePOServer) | Out-Null
         $textForReportInfo.Add($mcafeeEndpointinstalled + "last updated " + $avCreationDate + ". ePO configuration - " + $ePOServer) | Out-Null
     }
 
@@ -1188,10 +1207,10 @@ if($installedAV -match "Endpoint" -and (Test-Path -Path HKLM:\SOFTWARE\McAfee\AV
 	    $textForReport.Add("## OK(Info) ## Installed but not updated within the last 2 days, last updated") | Out-Null
         $textForReportInfo.Add($mcafeeEndpointinstalled + "Installed but not updated within the last 2 days, last updated " + $avCreationDate) | Out-Null
     }
-
+    $AVPrimary = $true
 }
 
-if($installedAV -match "McAfee Agent" -and (Test-Path -Path "C:\ProgramData\McAfee\Common Framework\UpdateHistory.ini"))
+if($installedAV -match "Trellix Agent" -and (Test-Path -Path "C:\ProgramData\McAfee\Common Framework\UpdateHistory.ini"))
 {
     $mcafeeAgentinstalled = $installedAV
     $checkValue = Get-Content -Path "C:\ProgramData\McAfee\Common Framework\UpdateHistory.ini" | Where-Object{$_ -match "LastUpdateCatalogVersion"} | Out-String
@@ -1204,37 +1223,37 @@ if($installedAV -match "McAfee Agent" -and (Test-Path -Path "C:\ProgramData\McAf
     if ($avCreationDate -ge $checkDate)
     {
 
-        $resultAV = "## OK ## Mcafee Agent installed and updated"
-        $textForReport.Add("## OK ## Mcafee Agent Installed and updated") | Out-Null
+        $resultAV = "## OK ## Trellix Agent installed and updated"
+        $textForReport.Add("## OK ## Trellix Agent Installed and updated") | Out-Null
         $textForReportInfo.Add($mcafeeAgentinstalled + "last updated " + $avCreationDate) | Out-Null
     }
 
     else
     {
-        $resultAV = "## OK(Info) ## Mcafee Agent installed but not updated within the last 2 days, last updated "
-	$textForReport.Add("## OK(Info) ## Mcafee Agent installed but not updated within the last 2 days, last updated") | Out-Null
+        $resultAV = "## OK(Info) ## Trellix Agent installed but not updated within the last 2 days, last updated "
+	$textForReport.Add("## OK(Info) ## Trellix Agent installed but not updated within the last 2 days, last updated") | Out-Null
         $textForReportInfo.Add($mcafeeAgentinstalled + "Installed but not updated within the last 2 days, last updated " + $avCreationDate) | Out-Null
     }
-
+    $AVPrimary = $true
 }
 
 if(($installedAV -match "Cisco AMP" -or $installedAV -match "Cisco Secure Endpoint") -and (Test-Path -Path "C:\Program Files\Cisco\AMP\policy.xml"))
 {
 	$CiscoAMPinstalled = $installedAV
 
-	$filepath = Get-ChildItem -Path "C:\Program Files\Cisco\AMP\policy.xml"
-	$file = Get-Content $filepath.FullName
+	#$filepath = Get-ChildItem -Path "C:\Program Files\Cisco\AMP\policy.xml"
+	#$file = Get-Content $filepath.FullName
 
-	$containsProtect = $file | foreach-object{$_ -match "Protect"}
-	$containsAudit = $file | foreach-object{$_ -match "Audit"}
-	If($containsProtect -contains $true)
-	{
-	    	$textForReport.Add("## OK ## Antivirus in active [Protect] mode") | Out-Null
-	}
-	ElseIf($containsAudit -contains $true)
-	{
-		$textForReport.Add("## Failed ## Antivirus is installed but in inactive [Audit] mode") | Out-Null
-	}
+	#$containsProtect = $file | foreach-object{$_ -match "Protect"}
+	#$containsAudit = $file | foreach-object{$_ -match "Audit"}
+	#If($containsProtect -contains $true)
+	#{
+	#    	$textForReport.Add("## OK ## Antivirus in active [Protect] mode") | Out-Null
+	#}
+	#ElseIf($containsAudit -contains $true)
+	#{
+	#	$textForReport.Add("## Failed ## Antivirus is installed but in inactive [Audit] mode") | Out-Null
+	#}
 
 	### Get Current date and AV defenition date ###
 	$virusDef = Get-ChildItem -Path "C:\Program Files\Cisco\AMP\tetra\versions.dat.*" | Where-object {$_.LastWriteTime -gt (Get-Date).AddDays(-3)}
@@ -1253,77 +1272,122 @@ if(($installedAV -match "Cisco AMP" -or $installedAV -match "Cisco Secure Endpoi
 		$textForReport.Add("## OK(Info) ## Cisco AMP Installed but not updated within the last 3 days, last updated") | Out-Null
 		$textForReportInfo.Add($CiscoAMPinstalled + "Installed but not updated within the last 3 days, last updated " + $virusDef) | Out-Null
 	}
+    $AVPrimary = $true
 }
+
+
 
 if($installedAV -match "Trend" )
 {
 	$TrendMicroinstalled = $installedAV
 
+	### Get Current date and AV defenition date ###
 
-
-
+    $installationfolder = (Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\TrendMicro\Deep Security Agent\' -name InstallationFolder).installationfolder
 
 
 	### Get Current date and AV defenition date ###
+    $arguments = "--cmd  ""GetAgentStatus"""
+    $cmdpath = $installationfolder + "dsa_query.cmd"
+    $pinfo = New-Object System.Diagnostics.ProcessStartInfo
+    $pinfo.FileName = $cmdpath
+    $pinfo.RedirectStandardError = $true
+    $pinfo.RedirectStandardOutput = $true
+    $pinfo.UseShellExecute = $false
+    $pinfo.Arguments =  $arguments
+    $p = New-Object System.Diagnostics.Process
+    $p.StartInfo = $pinfo
+    $p.Start() | Out-Null
+    $p.WaitForExit()
+    $stdout = $p.StandardOutput.ReadToEnd()
+    $LastContact = $stdout -match "lastAgentToManagerSession"
+    if ($LastContact)
+    {
+        $CurrentTime = $stdout | findstr "currentTime:"
+        $currentTime = $CurrentTime.substring(25,$CurrentTime.length-25)
+        $LastContactTime = $stdout | findstr "lastAgentToManagerSession:"
+        $LastContactTime = $LastContactTime.substring(39,$LastContactTime.length-39)
+        $timespan = [int]$currentTime-[int]$LastContactTime
+        if ($timespan -lt 25920) # 72 hours
+	    {
+		    $status = $true
+	    }
+	    else
+	    {
+		    $status = $false
+	    }
+    }
+    else
+    {
+        $status = $false
+    }
 
-	$virusDefDate =  Get-ItemProperty -Path Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\TrendMicro\PC-cillinNTCorp\CurrentVersion\Misc. -Name "PatternDate"
-    $DateStr = $virusDefDate.PatternDate
-    $virusDefYearString =  $DateStr.Substring( 0,4)
-    $virusDefMonthString = $DateStr.Substring( 4,2)
-    $virusDefDayString = $DateStr.Substring( 6,2)
-    $virusDefDate=  get-date -Year $virusDefYearString -Month $virusDefMonthString -Day $virusDefDayString -hour 0 -Minute 0 -Second 0
-    $Age =  (get-date) - $virusDefDate
-
-	If($Age.Days -lt 3)
+    If($status)
 	{
-		$resultAV = "## OK ## Trend Micro Installed and updated, last updated " + $DateStr
-
-		$textForReport.Add("## OK ## Trend Micro Installed and updated") | Out-Null
-		$TrendMicroInfo = $TrendMicroinstalled + "last updated " + $DateStr
+		$resultAV = "## OK ## Trend Micro installed and updated"
+		$textForReport.Add("## OK ## Trend Micro installed and updated") | Out-Null
+		$TrendMicroInfo = $TrendMicroinstalled
 		$textForReportInfo.add($TrendMicroInfo) | Out-Null
 	}
 	Else
 	{
-	    $resultAV = "## Failed(Info) ## Trend Micro Installed but not updated within the last 3 days, last updated " +$DateStr
-		$textForReport.Add("## OK(Info) ## Trend Micros Installed but not updated within the last 3 days, last updated " + $DateStr) | Out-Null
-		$textForReportInfo.Add($TrendMicroinstalled + "Installed but not updated within the last 3 days, last updated " + $DateStr) | Out-Null
+	    $resultAV = "## Failed(Info) ## Trend Micro Installed but not updated"
+		$textForReport.Add("## Failed(Info) ## Trend Micros Installed but not updated") | Out-Null
+		$textForReportInfo.Add($TrendMicroinstalled + "Installed but not updated") | Out-Null
 	}
 }
 
-if($installedAV -match "Defender")
+$DefenderInstalled = (Get-WindowsFeature Windows-Defender).installed
+
+if ($DefenderInstalled -and -not $AVPrimary)
 {
-    $Defenderinstalled = $installedAV
+    ### Get Current date and AV defenition date ###
+    $installedAV = "Microsoft Defender"
 
+    $DefenderStatus = Get-MpComputerStatus | Select-Object -Property AMEngineVersion, AMProductVersion, AMServiceVersion, AntispywareSignatureLastUpdated, AntispywareSignatureVersion
 
+    $DateStr = $DefenderStatus.AntispywareSignatureLastUpdated
 
+    $WDATPOnboarding = (get-itemproperty -path "hklm:\SOFTWARE\Microsoft\Windows Advanced Threat Protection\Status" -name OnboardingState -ErrorAction SilentlyContinue).OnboardingState
 
+    $Age =  (get-date) - $datestr
+    $DefenderServiceInfo = Get-Service -Name windefend #  (Sense, WdNisSvc)
 
+     $NoOfServicesRunning = ($DefenderServiceInfo | where-object {$_.Status -eq "Running"} | measure-object).Count
 
-	### Get Current date and AV defenition date ###
-
-	$virusDates =  Get-MpComputerStatus  | select  AntispywareSignatureLastUpdated,  AntivirusSignatureLastUpdated 
-    $DateStr = $virusDates.AntivirusSignatureLastUpdated
-    $virusDefYearString =  $DateStr.Year
-    $virusDefMonthString = $DateStr.Month
-    $virusDefDayString = $DateStr.Day
-    $virusDefDate=  get-date -Year $virusDefYearString -Month $virusDefMonthString -Day $virusDefDayString -hour 0 -Minute 0 -Second 0
-    $Age =  (get-date) - $virusDefDate
-
-	If($Age.Days -lt 3)
+	If($Age.Days -lt 3 -and $WDATPOnboarding -and $NoOfServicesRunning -eq 1) # (3)
 	{
-		$resultAV = "## OK ## Microsoft Defender Installed and updated, last updated " + $DateStr
-
-		$textForReport.Add("## OK ## Microsoft Defender Installed and updated") | Out-Null
-		$DefenderInfo = $Defenderinstalled + " last updated " + $DateStr
-		$textForReportInfo.add($DefenderInfo) | Out-Null
+		$resultAV = "## OK ## Microsoft Defender installed and onboarded and services running and updated, last updated " + $DateStr
+		$textForReport.Add("## OK ## Microsoft Defender installed and onboarded and updated") | Out-Null
+		$DefenderInfo = "Microsoft Defender ("+$DefenderStatus.AMProductVersion + ") last updated " + $DateStr
+      		$textForReportInfo.add($DefenderInfo) | Out-Null
+         	$textForReportInfo.add($DefenderServiceInfo) | Out-Null
 	}
-	Else
+	Elseif (-not $WDATPOnboarding -and $Age.Days -gt 2)
 	{
-	    $resultAV = "## Failed(Info) ## Microsoft Defender Installed but not updated within the last 3 days, last updated " +$DateStr
-		$textForReport.Add("## OK(Info) ## Microsoft Defender Installed but not updated within the last 3 days, last updated " + $DateStr) | Out-Null
-		$textForReportInfo.Add($Defenderinstalled + " Installed but not updated within the last 3 days, last updated " + $DateStr) | Out-Null
+	    $resultAV = "## Failed(Info) ## M## Microsoft Defender installed but not onboarded and not updated within the last 3 days, last updated " + $DateStr
+		$textForReport.Add("## OK(Info) ## Microsoft Defender installed but not onboarded and not updated within the last 3 days, last updated " + $DateStr) | Out-Null
+		$textForReportInfo.Add("Microsoft Defender installed but not onboarded and not updated within the last 3 days, last updated " + $DateStr) | Out-Null
+		$textForReportInfo.add($DefenderServiceInfo) | Out-Null
+	}
+	Elseif (-not $WDATPOnboarding -and $Age.Days -lt 3)
+	{
+	    $resultAV = "## Failed(Info) ## Microsoft Defender installed but not onboarded"
+		$textForReport.Add("## Failed(Info) ## Microsoft Defender installed but not onboarded") | Out-Null
+		$textForReportInfo.Add("Microsoft Defender installed but not onboarded ")| Out-Null
+		 $textForReportInfo.add($DefenderServiceInfo) | Out-Null
+    }
+
+    Else
+	{
+	    $resultAV = "## Failed(Info) ## Microsoft Defender installed but not updated within the last 3 days, last updated " + $DateStr
+		$textForReport.Add("## Failed(Info) ## Microsoft Defender installed but not updated within the last 3 days, last updated " + $DateStr) | Out-Null
+		$textForReportInfo.Add("Microsoft Defender installed but not updated within the last 3 days, last updated " + $DateStr) | Out-Null
+		 $textForReportInfo.add($DefenderServiceInfo) | Out-Null
 	}
 }
+if($installedAV)
+{}
 Elseif (-not $Antivirus)
 {
 
@@ -1351,10 +1415,10 @@ $AuditResults.Add($resultAV) | Out-Null
 ### Module Start ###
 ### Backup installeret ###
 ### Audit Module
-### Author: OTDU
+### Author: RRII
 ### Approver: TBKL
-### Date: 2019.05.24
-### Version: 1.0
+### Date: 2023.08.01
+### Version: 1.5
 ### PRD-089
 
 ### Changelog ###
@@ -1364,6 +1428,8 @@ $AuditResults.Add($resultAV) | Out-Null
 ### 1.2, 2019.10.03, TBKL, Added support for Azure Backup
 ### 1.3, 2020.07.04, TBKL, Add option to accept failure of check
 ### 1.4, 2020.04.12, TBKL, Correction to option to accept failure of check
+### 1.5, 2023.08.01, TBKL, Added support for Commvault Snapshot on VM on VMhost as approved option
+
 
 $textForReport = [System.Collections.ArrayList]@()
 $textForReportInfo = [System.Collections.ArrayList]@()
@@ -1406,12 +1472,20 @@ if($installedBackup -match "Symantec Netbackup" -or $installedBackup -match "Ver
 
 }
 
-if($installedBackup -match "Commvault")
+if($installedBackup -match "Commvault" -and $commvault_proceed_install)
 {
 	$resultBackup = "## OK ## Commvault Backup Installed"
         $textForReport.Add("## OK ## Commvault Backup Installed") | Out-Null
         $textForReportInfo.Add($installedBackup) | Out-Null
 }
+
+if($Backup -and -not $commvault_proceed_install)
+{
+	$resultBackup = "## OK Info ## Commvault is configured for snapshot and client is intentionally not installed on the server"
+        $textForReport.Add("## OK Info ## Commvault is configured for snapshot and client is intentionally not installed on the server") | Out-Null
+        $textForReportInfo.Add($installedBackup) | Out-Null
+}
+
 
 if($installedBackup -match "Azure Recovery")
 {
@@ -1420,21 +1494,19 @@ if($installedBackup -match "Azure Recovery")
         $textForReportInfo.Add($installedBackup) | Out-Null
 }
 
-if($Backup)
-{}
-Elseif (-not $Backup)
+if($Backup -and -not $installedBackup -and  $commvault_proceed_install)
+{
+    $resultBackup = "## Failed ## No Backup software found"
+    	$textForReport.Add("## Failed ## No Backup software found") | Out-Null
+    	$textForReportInfo.Add("## Failed ## No Backup software found") | Out-Null
+}
+Elseif (-not $Backup  )
 {
 	$resultBackup = "## OK ## No Backup software found. Not required."
     	$textForReport.Add("## OK ## No Backup software found. Not required.") | Out-Null
     	$textForReportInfo.Add("## OK ## No Backup software found. Not required.") | Out-Null
 }
 
-else
-{
-	$resultBackup = "## Failed ## No Backup software found"
-    	$textForReport.Add("## Failed ## No Backup software found") | Out-Null
-    	$textForReportInfo.Add("## Failed ## No Backup software found") | Out-Null
-}
 
 $textForReportInfo.Add("") | Out-Null
 $textForReport | out-file $AuditReport -Append
@@ -2805,7 +2877,7 @@ $textForReportInfoFails | out-file $AuditReportInfo -Append
 ### Module Start ###
 ### Local Policies ###
 ### Audit Module
-### Author: OTDU
+### Author: RRII
 ### Approver: TBKL
 ### Date: 2019.06.21
 ### Version: 1.1
@@ -2814,7 +2886,7 @@ $textForReportInfoFails | out-file $AuditReportInfo -Append
 ### Changelog ###
 ### Version, Date, Initials, Change Description
 ### 1.0, 2019.05.24, OTDU, New Module
-### 1.1, 2019.06.21, OTDU, Fixed false posetive( -like changed to -match ), Added domain awareness so it will be “OK Info” if the server is joined to a domain
+### 1.1, 2019.06.21, OTDU, Fixed false posetive( -like changed to -match ), Added domain awareness so it will be ?OK Info? if the server is joined to a domain
 
 $textForReport = [System.Collections.ArrayList]@()
 $textForReportInfo = [System.Collections.ArrayList]@()
@@ -2950,18 +3022,6 @@ else{$Noncompliant.Add("Failed: " + $policyName + ":" + $policyValue) | Out-Null
 
 ###############################
 
-### RequireLogonToChangePassword ###
-$secTemp = $secInfo | Select-String "RequireLogonToChangePassword " | Out-String
-$secTemp = $secTemp.split($separator, 4, $option)
-
-$policyName = $secTemp[1]
-[int]$policyValue = $secTemp[2]
-
-if($policyValue -eq "1"){$compliant.Add($policyName + ":" + $policyValue) | Out-Null }
-else{$Noncompliant.Add("Failed: " + $policyName + ":" + $policyValue) | Out-Null }
-
-###############################
-
 ### ForceLogoffWhenHourExpire ###
 $secTemp = $secInfo | Select-String "ForceLogoffWhenHourExpire " | Out-String
 $secTemp = $secTemp.split($separator, 4, $option)
@@ -3031,7 +3091,7 @@ $AuditResults.Add($resultPolicy) | Out-Null
 ### Module Start ###
 ### Result ###
 ### Audit Module
-### Author: OTDU
+### Author: RRII
 ### Approver: TBKL
 ### Date: 2019.05.24
 ### Version: 1.0
@@ -3057,4 +3117,4 @@ Else
 	$Exitcode = 0
 }
 
-$exitcode
+exit $Exitcode
