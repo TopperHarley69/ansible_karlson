@@ -5,12 +5,10 @@
   become_user: administrator
 
   tasks:
-    - name: copy file
-      ansible.windows.win_copy:
-       src: \\fileserver\Downloads\SW\Edge\MicrosoftEdgeEnterpriseX64.msi
-       dest: c:\temp\
-      register: script_return
-    - name: Install Edge
-      
-    - debug:
+    - name: InstallEdge
+      win_package:
+        path: \\fileserver\Downloads\SW\Edge\MicrosoftEdgeEnterpriseX64.msi
+        state: present
+        arguments: /qn
+     - debug:
         msg: "{{ script_return }}"
