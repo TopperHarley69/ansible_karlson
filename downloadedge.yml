@@ -1,0 +1,9 @@
+---
+- name: Download Edge
+  hosts: localhost
+  gather_facts: no
+     - name: Download Edge
+      ansible.builtin.get_url:
+        url: https://go.microsoft.com/fwlink/?linkid=2093437
+        dest: /var/lib/software/MicrosoftEdgeEnterpriseX64.msi
+        mode: '0644'
