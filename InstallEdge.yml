@@ -10,5 +10,6 @@
         path: \\fileserver\Downloads\SW\Edge\MicrosoftEdgeEnterpriseX64.msi
         state: present
         arguments: /qn
+        register: script_return
      - debug:
         msg: "{{ script_return }}"
