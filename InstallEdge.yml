@@ -1,9 +1,7 @@
 - name: Install Edge
   hosts: deploys
-  gather_facts: yes
-  become: yes
-  become_user: administrator
-
+  gather_facts: no
+  
   tasks:
     - name: Download Edge
       ansible.builtin.get_url:
