@@ -9,14 +9,12 @@
       ansible.builtin.get_url:
         url: "https://go.microsoft.com/fwlink/?linkid=2093437"
         dest: "/var/lib/software/"
-
-      - name: Copy SW
+    - name: Copy SW
         ansible.windows.win_copy:
           src: "/var/lib/software/MicrosoftEdgeEnterpriseX64.msi"
           dest: c:\temp
-
     - name: InstallEdge
-      win_package:
-        path: c:\temp\MicrosoftEdgeEnterpriseX64.msi
-        state: present
-        arguments: /qn
+        win_package:
+          path: c:\temp\MicrosoftEdgeEnterpriseX64.msi
+          state: present
+          arguments: /qn
