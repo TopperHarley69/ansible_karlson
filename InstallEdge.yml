@@ -12,4 +12,4 @@
         arguments: /qn
         register: script_return
      - debug:
-        msg: "{{ script_return }}"
+       msg: "{{ script_return }}"
