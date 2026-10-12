@@ -1,15 +1,15 @@
+---
 - name: Install Edge
   hosts: deploys
   gather_facts: no
-  
   tasks:
     - name: Download Edge
       ansible.builtin.get_url:
-        url: "https://go.microsoft.com/fwlink/?linkid=2093437"
-        dest: "/var/lib/software/"
+        url: https://go.microsoft.com/fwlink/?linkid=2093437
+        dest: /var/lib/software/
     - name: Copy SW
       ansible.windows.win_copy:
-        src: "/var/lib/software/MicrosoftEdgeEnterpriseX64.msi"
+        src: /var/lib/software/MicrosoftEdgeEnterpriseX64.msi
         dest: c:\temp
     - name: InstallEdge
       win_package:
