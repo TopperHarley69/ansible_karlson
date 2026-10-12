@@ -5,8 +5,13 @@
   become_user: administrator
 
   tasks:
+    - name: Copy SW
+      ansible.windows.win_copy:
+        src: \\fileserver\Downloads\SW\Edge\MicrosoftEdgeEnterpriseX64.msi
+        dest: c:\temp
+
     - name: InstallEdge
       win_package:
-        path: \\fileserver\Downloads\SW\Edge\MicrosoftEdgeEnterpriseX64.msi
+        path: c:\temp\MicrosoftEdgeEnterpriseX64.msi
         state: present
         arguments: /qn
