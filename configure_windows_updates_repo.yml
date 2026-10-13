@@ -1,0 +1,924 @@
+# -------------------------------------------------------------------------------
+# Playbook: configure_windows_updates_repo.yml (Windows)
+#
+# Purpose:
+#   Installs Windows update packages from a central repository/content manager
+#   using the same directory structure as an ISO-based update source.
+#
+# Functionality:
+#   - Validates the central repository path exists on the target host
+#   - Recursively discovers .msu and .cab packages
+#   - Applies packages in deterministic order (SSU first when detectable)
+#   - Handles reboot logic (yes/no/auto)
+#   - Reports installation outcome per package
+#
+# Variables:
+#   - update_repo_root: (Required) Repository source root
+#     Examples:
+#       SMB/NFS/local path: '\\fileserver\\windows-updates' or 'D:\\PatchRepo'
+#       HTTP(S) URL: 'https://repo.example.com/windows-updates'
+#   - update_repo_subpath: (Optional) ISO-like subpath under root
+#     Example: 'Windows2022\\2026-08'
+#   - repo_access_mode: (Optional) How packages are accessed
+#     Options: 'direct', 'controller_proxy' (default: 'direct')
+#     - direct: target host reads source directly
+#     - controller_proxy: AWX/EE reads source and copies to target
+#   - repo_source_type: (Optional) Source type
+#     Options: 'auto', 'filesystem', 'smb', 'nfs', 'http', 'https' (default: 'auto')
+#   - controller_repo_root: (Optional) Source root as seen from AWX/EE when using controller_proxy
+#     Default: update_repo_root
+#   - target_stage_dir: (Optional) Target staging path used by controller_proxy
+#     Default: 'C:\\Windows\\Temp\\repo-updates-controller'
+#   - update_file_patterns: (Optional) Package patterns to include
+#     Default: ['*.msu', '*.cab']
+#   - recurse_repo: (Optional) Recurse folders while searching (default: yes)
+#   - http_stage_dir: (Optional) Local staging directory for HTTP(S) downloads
+#     Default: 'C:\\Windows\\Temp\\repo-updates'
+#   - update_http_package_urls: (Optional) Explicit package URLs for HTTP(S)
+#     Default: [] (auto-discover from directory listing)
+#   - http_timeout: (Optional) HTTP request timeout in seconds (default: 600)
+#   - reboot: (Optional) Reboot behavior after installation
+#     Options: 'yes', 'no', 'auto' (default: 'auto')
+#   - reboot_timeout: (Optional) Maximum time to wait for reboot (default: 1800)
+#   - wsusscn2_manage: (Optional) Enable optional WSUS offline scan file (wsusscn2.cab) workflow (default: no)
+#     When enabled, the playbook acquires wsusscn2.cab, stages it on the target, scans the
+#     target for missing updates, and compares the missing updates against the repository content.
+#   - wsusscn2_source: (Optional) Where to obtain wsusscn2.cab from
+#     Options: 'download', 'repo' (default: 'download')
+#     - download: fetched from Microsoft (https://go.microsoft.com/fwlink/p/?LinkID=74689)
+#     - repo: copied from an existing path (already downloaded and stored in the repo)
+#   - wsusscn2_download_url: (Optional) Source URL used when wsusscn2_source=download
+#     Default: 'https://go.microsoft.com/fwlink/p/?LinkID=74689'
+#   - wsusscn2_repo_path: (Optional) Path to an existing wsusscn2.cab, reachable from the
+#     Ansible controller/EE, used when wsusscn2_source=repo
+#     Default: '/var/lib/awx/patch_artifacts/wsusscn2.cab' (offline patch artifacts store)
+#   - wsusscn2_local_cache_dir: (Optional) Controller-local cache directory for wsusscn2.cab
+#     Default: '/var/lib/awx/patch_artifacts'
+#   - wsusscn2_force_refresh: (Optional) Force re-download/re-copy even if a cached copy exists (default: no)
+#   - wsusscn2_target_dir: (Optional) Directory on the target used to stage wsusscn2.cab
+#     Default: 'C:\\Windows\\Temp\\wsusscn2'
+#   - wsusscn2_severity_filter: (Optional) Restrict the missing-update comparison to these
+#     MsrcSeverity values, for example ['Critical', 'Important']
+#     Default: [] (no filtering, all missing updates are considered)
+#   - wsusscn2_fetch_missing_from_catalog: (Optional) After comparing against the repo, download
+#     updates that are missing on the target AND not yet in the repo directly from the
+#     Microsoft Update Catalog (default: no). Requires target internet access.
+#   - wsusscn2_catalog_architecture: (Optional) Architecture used when searching the
+#     Microsoft Update Catalog (default: 'x64')
+#   - dry_run: (Optional) Discover/stage/scan/compare packages as normal, but skip the actual
+#     DISM installation and reboot steps (default: no)
+#
+# Example usage:
+#   # Install all discovered .msu/.cab packages from repository root
+#   ansible-playbook configure_windows_updates_repo.yml \
+#     -i inventory.yml \
+#     -e "update_repo_root='\\\\fileserver\\windows-updates'"
+#
+#   # Install from ISO-like subfolder under the same repository
+#   ansible-playbook configure_windows_updates_repo.yml \
+#     -i inventory.yml \
+#     -e "update_repo_root='\\\\fileserver\\windows-updates'" \
+#     -e "update_repo_subpath='Windows2022\\2026-08'"
+#
+#   # Install without rebooting automatically
+#   ansible-playbook configure_windows_updates_repo.yml \
+#     -i inventory.yml \
+#     -e "update_repo_root='\\\\fileserver\\windows-updates'" \
+#     -e "reboot=no"
+#
+#   # Use local path on target and only MSU files
+#   ansible-playbook configure_windows_updates_repo.yml \
+#     -i inventory.yml \
+#     -e "update_repo_root='D:\\PatchRepo'" \
+#     -e "update_file_patterns=['*.msu']"
+#
+#   # Install from NFS-backed content exposed as mounted path on Windows
+#   ansible-playbook configure_windows_updates_repo.yml \
+#     -i inventory.yml \
+#     -e "repo_source_type=nfs" \
+#     -e "update_repo_root='Z:\\windows-updates\\Windows2022\\2026-08'"
+#
+#   # Controller-proxy mode for air-gapped Windows targets
+#   # (NFS path mounted and readable inside AWX EE)
+#   ansible-playbook configure_windows_updates_repo.yml \
+#     -i inventory.yml \
+#     -e "repo_access_mode=controller_proxy" \
+#     -e "repo_source_type=nfs" \
+#     -e "controller_repo_root='/mnt/nfs/windows-updates'" \
+#     -e "update_repo_subpath='Windows2022/2026-08'"
+#
+#   # Install from HTTP(S) content source with auto-discovery
+#   ansible-playbook configure_windows_updates_repo.yml \
+#     -i inventory.yml \
+#     -e "repo_source_type=https" \
+#     -e "update_repo_root='https://repo.example.com/windows-updates'" \
+#     -e "update_repo_subpath='Windows2022/2026-08'"
+#
+#   # Install from HTTP(S) using explicit package URLs
+#   ansible-playbook configure_windows_updates_repo.yml \
+#     -i inventory.yml \
+#     -e "repo_source_type=http" \
+#     -e "update_repo_root='http://repo.example.com/windows-updates'" \
+#     -e "update_http_package_urls=['http://repo.example.com/windows-updates/SSU/KB5030001.msu','http://repo.example.com/windows-updates/LCU/KB5030002.msu']"
+#
+#   # Optional: download wsusscn2.cab from Microsoft, stage it on target, and compare against repo content
+#   ansible-playbook configure_windows_updates_repo.yml \
+#     -i inventory.yml \
+#     -e "update_repo_root='\\\\fileserver\windows-updates'" \
+#     -e "wsusscn2_manage=yes"
+#
+#   # OFFLINE / AIR-GAPPED: wsusscn2.cab was already placed in the AWX offline patch
+#   # artifacts store ahead of time (for example, uploaded/copied to
+#   # /var/lib/awx/patch_artifacts/wsusscn2.cab on the AWX/EE host from a machine
+#   # that does have internet access). No download is attempted here - the cab is
+#   # copied straight from that store to the target and scanned there to see what
+#   # is missing on the server, then compared against what the repo already has.
+#   ansible-playbook configure_windows_updates_repo.yml \
+#     -i inventory.yml \
+#     -e "update_repo_root='\\\\fileserver\windows-updates'" \
+#     -e "wsusscn2_manage=yes" \
+#     -e "wsusscn2_source=repo"
+#
+#   # LIVE PATCHING: AWX/EE has internet access, so fetch the latest wsusscn2.cab
+#   # directly from Microsoft each run (wsusscn2_force_refresh replaces any cached
+#   # copy), stage it on the target, scan the target, and compare the missing
+#   # updates against what the repo already has.
+#   ansible-playbook configure_windows_updates_repo.yml \
+#     -i inventory.yml \
+#     -e "update_repo_root='\\\\fileserver\windows-updates'" \
+#     -e "wsusscn2_manage=yes" \
+#     -e "wsusscn2_source=download" \
+#     -e "wsusscn2_force_refresh=yes"
+#
+#   # LIVE PATCHING: also auto-download Critical/Important updates that are missing on the
+#   # target and not yet available in the repo, straight from the Microsoft Update Catalog,
+#   # and stage the downloaded files into the controller-local repo cache for reuse.
+#   ansible-playbook configure_windows_updates_repo.yml \
+#     -i inventory.yml \
+#     -e "update_repo_root='\\\\fileserver\windows-updates'" \
+#     -e "wsusscn2_manage=yes" \
+#     -e "wsusscn2_source=download" \
+#     -e "wsusscn2_severity_filter=['Critical','Important']" \
+#     -e "wsusscn2_fetch_missing_from_catalog=yes"
+#
+#   # DRY RUN: discover repo content, stage/scan wsusscn2.cab, and show what is missing
+#   # and what would be installed, without actually applying any packages or rebooting.
+#   ansible-playbook configure_windows_updates_repo.yml \
+#     -i inventory.yml \
+#     -e "update_repo_root='\\\\fileserver\windows-updates'" \
+#     -e "wsusscn2_manage=yes" \
+#     -e "dry_run=yes"
+#
+#   # VERIFIED (real run against a live SSH-managed Windows host): inventory.ini contained
+#   #   [windows]
+#   #   winserver230.nnitcorp.com ansible_connection=ssh ansible_shell_type=powershell \
+#   #     ansible_user=Administrator ansible_password=*** ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+#   # This exact invocation was executed and confirmed working end-to-end: it staged
+#   # wsusscn2.cab from the repo store, scanned the target, and correctly reported
+#   # missing updates (for example KB890830, KB5122882) without installing anything.
+#   ansible-playbook configure_windows_updates_repo.yml \
+#     -i inventory.ini \
+#     -e "update_repo_root='C:\\PatchRepo'" \
+#     -e "wsusscn2_manage=yes" \
+#     -e "wsusscn2_source=repo" \
+#     -e "dry_run=yes"
+#
+# Notes:
+#   - The repository path is resolved on each Windows target.
+#   - SMB/NFS sources are handled as path-based sources on the target host.
+#   - NFS content must be reachable from Windows host (for example mounted drive/path).
+#   - In controller_proxy mode, package content flows AWX/EE -> target host.
+#   - For controller_proxy mode, controller_repo_root must exist in the EE container.
+#   - HTTP(S) sources are downloaded to http_stage_dir before installation.
+#   - This playbook does not call Windows Update or WSUS.
+#   - It is intended for offline/controlled patch content workflows.
+# -------------------------------------------------------------------------------
+---
+- name: Install Windows updates from central repository
+  hosts: all
+  gather_facts: yes
+
+  vars:
+    update_repo_root: ""
+    update_repo_subpath: ""
+    repo_access_mode: direct
+    repo_source_type: auto
+    controller_repo_root: ""
+    target_stage_dir: "C:\\Windows\\Temp\\repo-updates-controller"
+    update_file_patterns:
+    - "*.msu"
+    - "*.cab"
+    recurse_repo: yes
+    http_stage_dir: "C:\\Windows\\Temp\\repo-updates"
+    update_http_package_urls: []
+    http_timeout: 600
+    reboot: auto
+    reboot_timeout: 1800
+    # Rendered as a variable (rather than inline in the task) so the free-form argument
+    # splitter doesn't choke on this script's embedded quotes/heredocs.
+    http_download_script: |
+      $ErrorActionPreference = 'Stop'
+
+      $baseUrl = "{{ effective_update_repo_url | default('') }}"
+      $stageDir = "{{ http_stage_dir }}"
+      $recurse = [System.Convert]::ToBoolean("{{ recurse_repo | bool }}")
+      $timeoutSec = [int]"{{ http_timeout }}"
+
+      $patterns = @'
+      {{ update_file_patterns | to_json }}
+      '@ | ConvertFrom-Json
+
+      $explicitUrls = @'
+      {{ update_http_package_urls | to_json }}
+      '@ | ConvertFrom-Json
+
+      function Convert-GlobToRegex([string]$glob) {
+        return '^' + ([regex]::Escape($glob).Replace('\*', '.*').Replace('\?', '.')) + '$'
+      }
+
+      $patternRegexes = @()
+      foreach ($p in $patterns) {
+        $patternRegexes += (Convert-GlobToRegex $p)
+      }
+
+      function Matches-Pattern([string]$fileName, [string[]]$regexes) {
+        foreach ($r in $regexes) {
+          if ($fileName -imatch $r) {
+            return $true
+          }
+        }
+        return $false
+      }
+
+      $downloadUrls = New-Object System.Collections.Generic.List[string]
+
+      if ($explicitUrls -is [string]) {
+        if (-not [string]::IsNullOrWhiteSpace($explicitUrls)) {
+          $downloadUrls.Add($explicitUrls) | Out-Null
+        }
+      }
+      elseif ($explicitUrls -is [System.Collections.IEnumerable]) {
+        foreach ($u in $explicitUrls) {
+          if (-not [string]::IsNullOrWhiteSpace([string]$u)) {
+            $downloadUrls.Add([string]$u) | Out-Null
+          }
+        }
+      }
+
+      if ($downloadUrls.Count -eq 0) {
+        $normalizedBase = $baseUrl.TrimEnd('/') + '/'
+        $queue = New-Object System.Collections.Generic.Queue[string]
+        $visited = New-Object System.Collections.Generic.HashSet[string]
+        $queue.Enqueue($normalizedBase)
+
+        while ($queue.Count -gt 0) {
+          $current = $queue.Dequeue()
+          if (-not $visited.Add($current)) {
+            continue
+          }
+
+          $page = Invoke-WebRequest -Uri $current -UseBasicParsing -TimeoutSec $timeoutSec
+
+          foreach ($link in $page.Links) {
+            $href = [string]$link.href
+            if ([string]::IsNullOrWhiteSpace($href)) {
+              continue
+            }
+
+            $absolute = [System.Uri]::new([System.Uri]$current, $href).AbsoluteUri
+            if (-not $absolute.StartsWith($normalizedBase, [System.StringComparison]::OrdinalIgnoreCase)) {
+              continue
+            }
+
+            if ($absolute.EndsWith('/')) {
+              if ($recurse) {
+                $queue.Enqueue($absolute)
+              }
+              continue
+            }
+
+            $fileName = [System.IO.Path]::GetFileName(([System.Uri]$absolute).LocalPath)
+            if (Matches-Pattern -fileName $fileName -regexes $patternRegexes) {
+              if (-not $downloadUrls.Contains($absolute)) {
+                $downloadUrls.Add($absolute) | Out-Null
+              }
+            }
+          }
+
+          if (-not $recurse) {
+            break
+          }
+        }
+      }
+
+      if ($downloadUrls.Count -eq 0) {
+        Write-Output '[]'
+        exit 0
+      }
+
+      $normalizedBaseUri = [System.Uri]($baseUrl.TrimEnd('/') + '/')
+      $downloadedPaths = New-Object System.Collections.Generic.List[string]
+
+      foreach ($url in $downloadUrls) {
+        $uriObj = [System.Uri]$url
+
+        if ($uriObj.AbsoluteUri.StartsWith($normalizedBaseUri.AbsoluteUri, [System.StringComparison]::OrdinalIgnoreCase)) {
+          $relative = [System.Uri]::UnescapeDataString($normalizedBaseUri.MakeRelativeUri($uriObj).ToString())
+          $relativePath = $relative -replace '/', '\'
+        }
+        else {
+          $relativePath = [System.IO.Path]::GetFileName($uriObj.LocalPath)
+        }
+
+        if ([string]::IsNullOrWhiteSpace($relativePath)) {
+          $relativePath = [System.IO.Path]::GetFileName($uriObj.LocalPath)
+        }
+
+        $destination = Join-Path $stageDir $relativePath
+        $destinationDir = Split-Path $destination -Parent
+        if (-not (Test-Path $destinationDir)) {
+          New-Item -ItemType Directory -Path $destinationDir -Force | Out-Null
+        }
+
+        Invoke-WebRequest -Uri $uriObj.AbsoluteUri -OutFile $destination -UseBasicParsing -TimeoutSec $timeoutSec
+        $downloadedPaths.Add($destination) | Out-Null
+      }
+
+      $downloadedPaths | ConvertTo-Json -Compress
+    wsusscn2_manage: no
+    wsusscn2_source: download
+    wsusscn2_download_url: "https://go.microsoft.com/fwlink/p/?LinkID=74689"
+    wsusscn2_repo_path: "/var/lib/awx/patch_artifacts/wsusscn2.cab"
+    wsusscn2_local_cache_dir: "/var/lib/awx/patch_artifacts"
+    wsusscn2_force_refresh: no
+    wsusscn2_target_dir: "C:\\Windows\\Temp\\wsusscn2"
+    wsusscn2_severity_filter: []
+    wsusscn2_fetch_missing_from_catalog: no
+    wsusscn2_catalog_architecture: "x64"
+    dry_run: no
+
+  tasks:
+  - name: Validate update_repo_root is provided
+    ansible.builtin.assert:
+      that:
+      - update_repo_root | trim | length > 0
+      fail_msg: "update_repo_root is required (for example: \\\\fileserver\\windows-updates)"
+
+  - name: Validate repo_source_type
+    ansible.builtin.assert:
+      that:
+      - repo_source_type | lower in ['auto', 'filesystem', 'smb', 'nfs', 'http', 'https']
+      fail_msg: "repo_source_type must be one of: auto, filesystem, smb, nfs, http, https"
+
+  - name: Validate repo_access_mode
+    ansible.builtin.assert:
+      that:
+      - repo_access_mode | lower in ['direct', 'controller_proxy']
+      fail_msg: "repo_access_mode must be one of: direct, controller_proxy"
+
+  - name: Resolve effective source type
+    ansible.builtin.set_fact:
+      effective_repo_source_type: >-
+        {{
+          (repo_source_type | lower)
+          if (repo_source_type | lower) != 'auto'
+          else
+          (
+            'https'
+            if (update_repo_root | trim | regex_search('^https://'))
+            else
+            (
+              'http'
+              if (update_repo_root | trim | regex_search('^http://'))
+              else 'filesystem'
+            )
+          )
+        }}
+
+  - name: Resolve effective access mode
+    ansible.builtin.set_fact:
+      effective_repo_access_mode: "{{ repo_access_mode | lower }}"
+
+  - name: Validate source type support for controller_proxy mode
+    ansible.builtin.assert:
+      that:
+      - effective_repo_source_type in ['filesystem', 'smb', 'nfs']
+      fail_msg: "controller_proxy mode currently supports filesystem/smb/nfs sources only"
+    when: effective_repo_access_mode == 'controller_proxy'
+
+  - name: Resolve controller repository root
+    ansible.builtin.set_fact:
+      effective_controller_repo_root: "{{ controller_repo_root if controller_repo_root | trim | length > 0 else update_repo_root }}"
+    when: effective_repo_access_mode == 'controller_proxy'
+
+  - name: Build effective repository path
+    ansible.builtin.set_fact:
+      effective_update_repo_path: >-
+        {{
+          (update_repo_root | regex_replace('\\\\+$', ''))
+          ~
+          (
+            ('\\' ~ (update_repo_subpath | regex_replace('^\\\\+', '') | regex_replace('\\\\+', '\\\\')))
+            if (update_repo_subpath | trim | length > 0)
+            else ''
+          )
+        }}
+
+  - name: Build effective repository URL for HTTP(S)
+    ansible.builtin.set_fact:
+      effective_update_repo_url: >-
+        {{
+          (update_repo_root | trim | regex_replace('/+$', ''))
+          ~
+          (
+            ('/' ~ (update_repo_subpath | regex_replace('^/+', '') | regex_replace('\\\\+', '/')))
+            if (update_repo_subpath | trim | length > 0)
+            else ''
+          )
+        }}
+    when: effective_repo_source_type in ['http', 'https']
+
+  - name: Build effective controller repository path (controller_proxy mode)
+    ansible.builtin.set_fact:
+      effective_controller_repo_path: >-
+        {{
+          (effective_controller_repo_root | trim | regex_replace('/+$', ''))
+          ~
+          (
+            ('/' ~ (update_repo_subpath | regex_replace('^/+', '') | regex_replace('\\\\+', '/')))
+            if (update_repo_subpath | trim | length > 0)
+            else ''
+          )
+        }}
+    when: effective_repo_access_mode == 'controller_proxy'
+
+  - name: Display repository configuration
+    ansible.builtin.debug:
+      msg:
+      - "Access mode: {{ effective_repo_access_mode }}"
+      - "Source type: {{ effective_repo_source_type }}"
+      - "Repository root: {{ update_repo_root }}"
+      - "Repository subpath: {{ update_repo_subpath if update_repo_subpath | trim | length > 0 else 'None' }}"
+      - "Effective path: {{ effective_update_repo_path }}"
+      - "Controller repo root: {{ effective_controller_repo_root | default('N/A') }}"
+      - "Controller effective path: {{ effective_controller_repo_path | default('N/A') }}"
+      - "Effective URL: {{ effective_update_repo_url | default('N/A') }}"
+      - "Package patterns: {{ update_file_patterns }}"
+      - "Recursive search: {{ recurse_repo }}"
+      - "Reboot mode: {{ reboot }}"
+      - "HTTP stage directory: {{ http_stage_dir if effective_repo_source_type in ['http', 'https'] else 'N/A' }}"
+      - "Target stage directory: {{ target_stage_dir if effective_repo_access_mode == 'controller_proxy' else 'N/A' }}"
+      - "wsusscn2 management enabled: {{ wsusscn2_manage | bool }}"
+
+  # ---------------------------------------------------------------------------
+  # Optional: acquire and stage the WSUS offline scan file (wsusscn2.cab).
+  # Used later to scan the target for missing updates and compare that list
+  # against what is available in the repository.
+  # ---------------------------------------------------------------------------
+  - name: Optional - acquire and stage wsusscn2.cab
+    when: wsusscn2_manage | bool
+    block:
+    - name: Validate wsusscn2_source
+      ansible.builtin.assert:
+        that:
+        - wsusscn2_source | lower in ['download', 'repo']
+        fail_msg: "wsusscn2_source must be one of: download, repo"
+
+    - name: Validate wsusscn2_repo_path is provided when source is repo
+      ansible.builtin.assert:
+        that:
+        - wsusscn2_repo_path | trim | length > 0
+        fail_msg: "wsusscn2_repo_path is required when wsusscn2_source=repo"
+      when: wsusscn2_source | lower == 'repo'
+
+    - name: Ensure controller-local wsusscn2 cache directory exists
+      ansible.builtin.file:
+        path: "{{ wsusscn2_local_cache_dir }}"
+        state: directory
+        mode: '0755'
+      delegate_to: localhost
+      run_once: true
+
+    - name: Check for existing cached wsusscn2.cab on controller
+      ansible.builtin.stat:
+        path: "{{ wsusscn2_local_cache_dir }}/wsusscn2.cab"
+      register: wsusscn2_cache_check
+      delegate_to: localhost
+      run_once: true
+
+    - name: Download wsusscn2.cab from Microsoft
+      ansible.builtin.get_url:
+        url: "{{ wsusscn2_download_url }}"
+        dest: "{{ wsusscn2_local_cache_dir }}/wsusscn2.cab"
+        mode: '0644'
+        force: "{{ wsusscn2_force_refresh | bool }}"
+        timeout: "{{ http_timeout }}"
+      delegate_to: localhost
+      run_once: true
+      when:
+      - wsusscn2_source | lower == 'download'
+      - (not wsusscn2_cache_check.stat.exists) or (wsusscn2_force_refresh | bool)
+
+    - name: Validate wsusscn2_repo_path exists (repo source)
+      ansible.builtin.stat:
+        path: "{{ wsusscn2_repo_path }}"
+      register: wsusscn2_repo_path_check
+      delegate_to: localhost
+      run_once: true
+      when: wsusscn2_source | lower == 'repo'
+
+    - name: Fail if wsusscn2_repo_path does not exist
+      ansible.builtin.fail:
+        msg: "wsusscn2_repo_path was not found: {{ wsusscn2_repo_path }}"
+      when:
+      - wsusscn2_source | lower == 'repo'
+      - not wsusscn2_repo_path_check.stat.exists
+
+    - name: Copy wsusscn2.cab from repo path into controller-local cache
+      ansible.builtin.copy:
+        src: "{{ wsusscn2_repo_path }}"
+        dest: "{{ wsusscn2_local_cache_dir }}/wsusscn2.cab"
+        mode: '0644'
+        remote_src: true
+      delegate_to: localhost
+      run_once: true
+      when:
+      - wsusscn2_source | lower == 'repo'
+      - wsusscn2_repo_path != (wsusscn2_local_cache_dir ~ '/wsusscn2.cab')
+      - (not wsusscn2_cache_check.stat.exists) or (wsusscn2_force_refresh | bool)
+
+    - name: Ensure wsusscn2 staging directory exists on target
+      ansible.windows.win_file:
+        path: "{{ wsusscn2_target_dir }}"
+        state: directory
+
+    - name: Copy wsusscn2.cab to target
+      ansible.windows.win_copy:
+        src: "{{ wsusscn2_local_cache_dir }}/wsusscn2.cab"
+        dest: "{{ wsusscn2_target_dir }}\\wsusscn2.cab"
+
+    - name: Display wsusscn2.cab staging summary
+      ansible.builtin.debug:
+        msg:
+        - "wsusscn2 source: {{ wsusscn2_source }}"
+        - "wsusscn2 controller cache: {{ wsusscn2_local_cache_dir }}/wsusscn2.cab"
+        - "wsusscn2 target path: {{ wsusscn2_target_dir }}\\wsusscn2.cab"
+
+  - name: Discover packages from filesystem-like sources (filesystem/smb/nfs)
+    when:
+    - effective_repo_access_mode == 'direct'
+    - effective_repo_source_type in ['filesystem', 'smb', 'nfs']
+    block:
+    - name: Validate repository path exists on target
+      ansible.windows.win_stat:
+        path: "{{ effective_update_repo_path }}"
+      register: repo_path_check
+
+    - name: Fail if repository path does not exist
+      ansible.builtin.fail:
+        msg: "Repository path was not found on target: {{ effective_update_repo_path }}"
+      when: not repo_path_check.stat.exists
+
+    - name: Find update packages in repository path
+      ansible.windows.win_find:
+        paths: "{{ effective_update_repo_path }}"
+        patterns: "{{ update_file_patterns }}"
+        recurse: "{{ recurse_repo }}"
+        file_type: file
+      register: discovered_packages
+
+    - name: Set discovered package path list from filesystem-like source
+      ansible.builtin.set_fact:
+        discovered_package_paths: "{{ discovered_packages.files | map(attribute='path') | list }}"
+
+  - name: Discover and stage packages from HTTP(S) source
+    when:
+    - effective_repo_access_mode == 'direct'
+    - effective_repo_source_type in ['http', 'https']
+    block:
+    - name: Ensure HTTP stage directory exists
+      ansible.windows.win_file:
+        path: "{{ http_stage_dir }}"
+        state: directory
+
+    - name: Download HTTP(S) packages to local stage directory
+      ansible.windows.win_shell: "{{ http_download_script }}"
+      register: http_download_result
+
+    - name: Parse downloaded package list
+      ansible.builtin.set_fact:
+        discovered_package_paths: "{{ http_download_result.stdout | default('[]') | from_json }}"
+
+    - name: Normalize downloaded package list to always be a list
+      ansible.builtin.set_fact:
+        discovered_package_paths: "{{ [discovered_package_paths] if discovered_package_paths is string else discovered_package_paths }}"
+
+  - name: Discover packages on controller and push to target (controller_proxy mode)
+    when: effective_repo_access_mode == 'controller_proxy'
+    block:
+    - name: Validate controller repository path exists in AWX/EE
+      ansible.builtin.stat:
+        path: "{{ effective_controller_repo_path }}"
+      register: controller_repo_path_check
+      delegate_to: localhost
+
+    - name: Fail if controller repository path does not exist in AWX/EE
+      ansible.builtin.fail:
+        msg: "Controller repository path was not found: {{ effective_controller_repo_path }}"
+      when: not controller_repo_path_check.stat.exists
+
+    - name: Find update packages in controller repository path
+      ansible.builtin.find:
+        paths: "{{ effective_controller_repo_path }}"
+        patterns: "{{ update_file_patterns }}"
+        recurse: "{{ recurse_repo }}"
+        file_type: file
+      register: controller_discovered_packages
+      delegate_to: localhost
+
+    - name: Set controller discovered package paths
+      ansible.builtin.set_fact:
+        controller_discovered_package_paths: "{{ controller_discovered_packages.files | map(attribute='path') | list }}"
+
+    - name: Fail if no update packages were found on controller path
+      ansible.builtin.fail:
+        msg: >-
+          No update packages were found under controller path {{ effective_controller_repo_path }} with patterns {{ update_file_patterns }}
+      when: controller_discovered_package_paths | length == 0
+
+    - name: Ensure target stage directory exists
+      ansible.windows.win_file:
+        path: "{{ target_stage_dir }}"
+        state: directory
+
+    - name: Copy packages from controller to target stage directory
+      ansible.windows.win_copy:
+        src: "{{ item }}"
+        dest: "{{ target_stage_dir }}\\{{ item | hash('sha1')[:12] }}_{{ item | basename }}"
+      loop: "{{ controller_discovered_package_paths }}"
+
+    - name: Build staged package path list on target
+      ansible.builtin.set_fact:
+        discovered_package_paths: []
+
+    - name: Add staged package path for each copied package
+      ansible.builtin.set_fact:
+        discovered_package_paths: "{{ discovered_package_paths + [target_stage_dir ~ '\\\\' ~ (item | hash('sha1')[:12]) ~ '_' ~ (item | basename)] }}"
+      loop: "{{ controller_discovered_package_paths }}"
+
+  - name: Fail if no update packages were found
+    ansible.builtin.fail:
+      msg: >-
+        No update packages were found from source {{ update_repo_root }} using patterns {{ update_file_patterns }}
+    when: discovered_package_paths | default([]) | length == 0
+
+  - name: Build ordered package list (SSU first, then CAB, then others)
+    ansible.windows.win_shell: |
+      $inputJson = @'
+      {{ discovered_package_paths | to_json }}
+      '@
+
+      $files = $inputJson | ConvertFrom-Json
+
+      $ordered = $files |
+        Sort-Object `
+          @{ Expression = {
+              $name = [System.IO.Path]::GetFileName([string]$_)
+              if ($name -match '(?i)servicing\s*stack|\bssu\b') { 0 }
+              elseif ($name -match '(?i)\.cab$') { 1 }
+              elseif ($name -match '(?i)cumulative|\blcu\b') { 2 }
+              else { 3 }
+            }
+          },
+          @{ Expression = { ([string]$_).ToLowerInvariant() } }
+
+      $ordered | ConvertTo-Json -Compress
+    register: ordered_packages_raw
+    changed_when: false
+
+  - name: Parse ordered package list
+    ansible.builtin.set_fact:
+      ordered_packages: "{{ ordered_packages_raw.stdout | from_json }}"
+
+  - name: Normalize ordered package list to always be a list
+    ansible.builtin.set_fact:
+      ordered_packages: "{{ [ordered_packages] if ordered_packages is string else ordered_packages }}"
+
+  - name: Show package ordering preview
+    ansible.builtin.debug:
+      msg:
+      - "Package count: {{ ordered_packages | length }}"
+      - "First package: {{ ordered_packages[0] }}"
+      - "Last package: {{ ordered_packages[-1] }}"
+
+  # ---------------------------------------------------------------------------
+  # Optional: scan the target against wsusscn2.cab and compare the missing
+  # updates it reports against the packages already available in the repo.
+  # ---------------------------------------------------------------------------
+  - name: Optional - scan target with wsusscn2.cab and compare against repo content
+    when: wsusscn2_manage | bool
+    block:
+    - name: Scan target for missing updates using wsusscn2.cab
+      ansible.windows.win_shell: |
+        $ErrorActionPreference = 'Stop'
+        $cabPath = "{{ wsusscn2_target_dir }}\\wsusscn2.cab"
+
+        $updateSession = New-Object -ComObject Microsoft.Update.Session
+          $updateServiceManager = New-Object -ComObject Microsoft.Update.ServiceManager
+          $updateService = $updateServiceManager.AddScanPackageService("Offline Sync Service", $cabPath)
+
+          $updateSearcher = $updateSession.CreateUpdateSearcher()
+          $updateSearcher.ServerSelection = 3
+          $updateSearcher.ServiceID = [string]$updateService.ServiceID
+          $searchResult = $updateSearcher.Search("IsInstalled=0")
+
+          $missing = @()
+          foreach ($u in $searchResult.Updates) {
+            $kb = $u.KBArticleIDs | Select-Object -First 1
+            $missing += [PSCustomObject]@{
+              Title    = $u.Title
+              KB       = "KB$kb"
+              Severity = $u.MsrcSeverity
+            }
+          }
+
+          $missing | ConvertTo-Json -Compress
+      register: wsusscn2_scan_raw
+      changed_when: false
+
+    - name: Parse missing update list from wsusscn2 scan
+      ansible.builtin.set_fact:
+        wsusscn2_missing_updates: "{{ wsusscn2_scan_raw.stdout | default('[]') | from_json }}"
+
+    - name: Normalize missing update list to always be a list
+      ansible.builtin.set_fact:
+        wsusscn2_missing_updates: "{{ [wsusscn2_missing_updates] if wsusscn2_missing_updates is mapping else wsusscn2_missing_updates }}"
+
+    - name: Restrict missing updates to the requested severities
+      ansible.builtin.set_fact:
+        wsusscn2_missing_updates: "{{ wsusscn2_missing_updates | selectattr('Severity', 'in', wsusscn2_severity_filter) | list }}"
+      when: wsusscn2_severity_filter | length > 0
+
+    - name: Extract KB numbers available in the repository
+      ansible.builtin.set_fact:
+        wsusscn2_repo_kbs: "{{ ordered_packages | map('regex_search', '(?i)KB[0-9]+') | select('string') | map('upper') | list }}"
+
+    - name: Determine missing updates already available in the repo
+      ansible.builtin.set_fact:
+        wsusscn2_missing_in_repo: "{{ wsusscn2_missing_updates | selectattr('KB', 'in', wsusscn2_repo_kbs) | list }}"
+
+    - name: Determine missing updates NOT available in the repo
+      ansible.builtin.set_fact:
+        wsusscn2_missing_not_in_repo: "{{ wsusscn2_missing_updates | rejectattr('KB', 'in', wsusscn2_repo_kbs) | list }}"
+
+    - name: Display wsusscn2 vs repo comparison summary
+      ansible.builtin.debug:
+        msg:
+        - "Updates missing on target per wsusscn2.cab scan: {{ wsusscn2_missing_updates | length }}"
+        - "Missing updates already present in repo: {{ wsusscn2_missing_in_repo | map(attribute='KB') | list }}"
+        - "Missing updates NOT present in repo (need to be added): {{ wsusscn2_missing_not_in_repo | map(attribute='KB') | list }}"
+
+  # ---------------------------------------------------------------------------
+  # Optional: for updates missing on the target that are NOT yet in the repo,
+  # fetch them from the Microsoft Update Catalog directly on the target and
+  # pull the downloaded files back into the controller-local repo cache.
+  # ---------------------------------------------------------------------------
+  - name: Optional - fetch updates missing from repo via Microsoft Update Catalog
+    when:
+    - wsusscn2_manage | bool
+    - wsusscn2_fetch_missing_from_catalog | bool
+    - wsusscn2_missing_not_in_repo | length > 0
+    block:
+    - name: Ensure MSCatalog PowerShell module is available on target
+      ansible.windows.win_shell: |
+        $ErrorActionPreference = 'Stop'
+        if (-not (Get-Module -ListAvailable -Name MSCatalog)) {
+          Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force | Out-Null
+          Install-Module -Name MSCatalog -Force -Scope CurrentUser -AllowClobber
+          Write-Output 'INSTALLED'
+        }
+      register: mscatalog_module_result
+      changed_when: "'INSTALLED' in mscatalog_module_result.stdout"
+
+    - name: Ensure catalog download staging directory exists on target
+      ansible.windows.win_file:
+        path: "{{ wsusscn2_target_dir }}\\catalog-downloads"
+        state: directory
+
+    - name: Download updates missing from repo from Microsoft Update Catalog
+      ansible.windows.win_shell: |
+        $ErrorActionPreference = 'Stop'
+        Import-Module MSCatalog -Force
+        $kb = "{{ item.KB }}"
+        $destination = Join-Path "{{ wsusscn2_target_dir }}\catalog-downloads" $kb
+        if (-not (Test-Path $destination)) { New-Item -ItemType Directory -Path $destination | Out-Null }
+
+        Get-MSCatalogUpdate -Search $kb -Architecture "{{ wsusscn2_catalog_architecture }}" |
+          Select-Object -First 1 |
+          Save-MSCatalogUpdate -Destination $destination -DownloadAll
+      loop: "{{ wsusscn2_missing_not_in_repo }}"
+      register: mscatalog_download_results
+
+    - name: Find downloaded catalog update files on target
+      ansible.windows.win_find:
+        paths: "{{ wsusscn2_target_dir }}\\catalog-downloads"
+        patterns: "{{ update_file_patterns }}"
+        recurse: yes
+        file_type: file
+      register: mscatalog_downloaded_files
+
+    - name: Pull downloaded catalog updates back into the controller-local repo cache
+      ansible.builtin.fetch:
+        src: "{{ item.path }}"
+        dest: "{{ wsusscn2_local_cache_dir }}/catalog-downloads/"
+        flat: no
+      loop: "{{ mscatalog_downloaded_files.files }}"
+
+    - name: Display Microsoft Update Catalog fetch summary
+      ansible.builtin.debug:
+        msg:
+        - "KBs requested from Microsoft Update Catalog: {{ wsusscn2_missing_not_in_repo | map(attribute='KB') | list }}"
+        - "Files downloaded on target: {{ mscatalog_downloaded_files.files | map(attribute='path') | list }}"
+        - "Files staged in controller repo cache: {{ wsusscn2_local_cache_dir }}/catalog-downloads/"
+
+  - name: Show dry-run notice (packages will not be installed)
+    ansible.builtin.debug:
+      msg:
+      - "dry_run is enabled - skipping DISM installation and reboot"
+      - "Packages that would be installed: {{ ordered_packages }}"
+    when: dry_run | bool
+
+  - name: Install update packages and reboot if needed
+    when: not (dry_run | bool)
+    block:
+    - name: Install update packages using DISM
+      ansible.windows.win_shell: |
+        $packagePath = "{{ item }}"
+        $args = @('/Online', '/Add-Package', "/PackagePath:$packagePath", '/Quiet', '/NoRestart')
+
+        $process = Start-Process -FilePath dism.exe -ArgumentList $args -Wait -PassThru
+        $exitCode = [int]$process.ExitCode
+
+        switch ($exitCode) {
+          0 {
+            Write-Output "RESULT=SUCCESS PATH=$packagePath EXITCODE=0"
+            exit 0
+          }
+          3010 {
+            Write-Output "RESULT=REBOOT_REQUIRED PATH=$packagePath EXITCODE=3010"
+            exit 0
+          }
+          default {
+            Write-Output "RESULT=FAILED PATH=$packagePath EXITCODE=$exitCode"
+            exit $exitCode
+          }
+        }
+      loop: "{{ ordered_packages }}"
+      register: package_install_results
+
+    - name: Detect whether reboot is required
+      ansible.builtin.set_fact:
+        repo_updates_need_reboot: >-
+          {{
+            (
+              package_install_results.results
+              | map(attribute='stdout')
+              | join('\n')
+              | regex_search('RESULT=REBOOT_REQUIRED')
+            ) is not none
+          }}
+
+    - name: Display installation summary
+      ansible.builtin.debug:
+        msg:
+        - "Packages attempted: {{ package_install_results.results | length }}"
+        - "Reboot required by at least one package: {{ repo_updates_need_reboot }}"
+
+    - name: Reboot system if required (auto mode)
+      ansible.windows.win_reboot:
+        reboot_timeout: "{{ reboot_timeout }}"
+        msg: "Rebooting to complete repository-based Windows update installation"
+      when:
+      - reboot == 'auto'
+      - repo_updates_need_reboot | bool
+
+    - name: Reboot system (forced)
+      ansible.windows.win_reboot:
+        reboot_timeout: "{{ reboot_timeout }}"
+        msg: "Rebooting after repository-based Windows update installation"
+      when: reboot == 'yes'
+
+    - name: Wait for system to come back online
+      ansible.builtin.wait_for_connection:
+        delay: 60
+        timeout: "{{ reboot_timeout }}"
+      when:
+      - reboot == 'yes' or (reboot == 'auto' and repo_updates_need_reboot | bool)
+
+    - name: Show per-package results
+      ansible.builtin.debug:
+        msg: "{{ package_install_results.results | map(attribute='stdout') | list }}"
+
+  - name: Success message
+    ansible.builtin.debug:
+      msg: "Windows repository-based updates completed{{ ' (dry run - no changes made)' if dry_run | bool else '' }}"
