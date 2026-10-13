@@ -195,7 +195,7 @@
 # -------------------------------------------------------------------------------
 ---
 - name: Install Windows updates from central repository
-  hosts: all
+  hosts: deploys
   gather_facts: yes
 
   vars:
