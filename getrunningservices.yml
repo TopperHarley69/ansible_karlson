@@ -1,5 +1,5 @@
 - name: List services running
-  hosts: deploys
+  hosts: windows
   gather_facts: yes
   become: yes
 
