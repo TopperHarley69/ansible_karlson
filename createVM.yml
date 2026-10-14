@@ -7,8 +7,8 @@
 
   vars:
     vcenter_hostname: "vshires.karlson.dk"
-    vcenter_username: "karlson\administrator"
-    vcenter_password: "PASSWORD"
+    vcenter_username: "administrator@vsphere.local"
+    vcenter_password: "gnP)B3jFX(8A"
     datacenter_name: "Lyngby"
     cluster_name: "Karlson"
     datastore_name: "Datastore10_1"
