@@ -3,6 +3,11 @@
   hosts: localhost
   gather_facts: no
   tasks:
+  - name: Remove file
+      ansible.builtin.file:
+        path: /var/lib/software/MicrosoftEdgeEnterpriseX64.msi
+        state: absent
+  
     - name: Fetch MSI file
       get_url:
         url: https://go.microsoft.com/fwlink/?linkid=2093437
