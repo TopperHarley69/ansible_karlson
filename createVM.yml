@@ -13,7 +13,7 @@
     cluster_name: "Karlson"
     datastore_name: "Datastore10_1"
     vm_name: "ansible-testvm"
-    #vm_template: "ubuntu-template"
+    vm_template: "ubuntu-template"
     vm_network: "VM Network"
 
   tasks:
