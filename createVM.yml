@@ -57,4 +57,4 @@
           domain: "example.com"
 
         state: poweredon
-      register: vm_output
+      register: present
