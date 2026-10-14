@@ -1,0 +1,7 @@
+- name: Check if reboot is pending
+  ansible.windows.win_pending_reboot:
+  register: reboot_status
+
+- name: Display reboot status
+  debug:
+    msg: "Pending reboot: {{ reboot_status.reboot_pending }}"
