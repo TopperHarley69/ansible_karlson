@@ -1,7 +1,28 @@
-- name: Check if reboot is pending
-  ansible.windows.win_pending_reboot:
-  register: reboot_status
+- name: Check Component Based Servicing
+  ansible.windows.win_reg_stat:
+    path: HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending
+  register: cbs_reboot
 
-- name: Display reboot status
+- name: Check Windows Update reboot requirement
+  ansible.windows.win_reg_stat:
+    path: HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired
+  register: wu_reboot
+
+- name: Check PendingFileRenameOperations
+  ansible.windows.win_reg_stat:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager
+    name: PendingFileRenameOperations
+  register: pending_file_rename
+
+- name: Set reboot required fact
+  set_fact:
+    pending_reboot: >-
+      {{
+        cbs_reboot.exists or
+        wu_reboot.exists or
+        pending_file_rename.exists
+      }}
+
+- name: Show result
   debug:
-    msg: "Pending reboot: {{ reboot_status.reboot_pending }}"
+    var: pending_reboot
