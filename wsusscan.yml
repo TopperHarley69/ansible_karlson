@@ -6,6 +6,10 @@
   gather_facts: false
 
   tasks:
+    - name: Copy SW
+      ansible.windows.win_copy:
+        src: /var/lib/software/wsusscn2.cab
+        dest: c:\temp
     - name: Search for applicable updates from offline WSUS catalog
       ansible.windows.win_powershell:
         script: |
