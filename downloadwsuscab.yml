@@ -1,0 +1,13 @@
+- name: Download wsus cab
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Remove file
+      ansible.builtin.file:
+        path: /var/lib/software/wsusscn2.cab
+        state: absent
+    - name: Fetch cab file
+      get_url:
+        url: https://catalog.s.download.windowsupdate.com/microsoftupdate/v6/wsusscan/wsusscn2.cab
+        dest: /var/lib/software/wsusscn2.cab
+        mode: "0644"
