@@ -51,4 +51,4 @@
 
     - name: Display applicable updates
       ansible.builtin.debug:
-        var: wsus_scan.stdout
+        msg: "{{ wsus_scan.stdout }}"
