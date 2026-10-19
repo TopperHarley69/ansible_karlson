@@ -11,7 +11,7 @@
   gather_facts: false
 - name: Run PowerShell
   ansible.windows.win_powershell:
-    script: |
+    script:
       Get-Service NonExistingService -ErrorAction Stop
   register: ps_result
   ignore_errors: true
