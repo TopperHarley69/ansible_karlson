@@ -15,12 +15,13 @@
   become_user: administrator
   
   become_method: runas
+
   
   tasks:
     - name: restart service
       ansible.windows.win_powershell:
         script: 
-          get-service | where {$_.displayname -eq "Windows Time"} | restart-service
+          get-service | where {$_.displayname -eq "{{ target_service }}"} | restart-service
       register: script_return
     - debug:
         msg: "{{ script_return }}"
