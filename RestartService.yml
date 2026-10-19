@@ -6,7 +6,7 @@
   tasks:
 
   - add_host:
-      hostname: "{{ target_hosts }}"
+      hostname: "{{ target_host }}"
       group: dynamic
 
 - hosts: dynamic
