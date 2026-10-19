@@ -8,16 +8,16 @@
         group: dynamic
 - hosts: dynamic
  
-- name: Run PowerShell
-  ansible.windows.win_powershell:
-    script:
-      Get-Service NonExistingService -ErrorAction Stop
-  register: ps_result
-  ignore_errors: true
-- name: Show error
-  debug:
-    var: ps_result
-- name: Take action on failure
-  debug:
-    msg: Service not found
-  when: ps_result is failed
+  - name: Run PowerShell
+    ansible.windows.win_powershell:
+      script:
+        Get-Service NonExistingService -ErrorAction Stop
+    register: ps_result
+    ignore_errors: true
+  - name: Show error
+    debug:
+      var: ps_result
+  - name: Take action on failure
+    debug:
+      msg: Service not found
+    when: ps_result is failed
