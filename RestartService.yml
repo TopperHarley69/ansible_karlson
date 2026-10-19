@@ -21,7 +21,7 @@
     - name: restart service
       ansible.windows.win_powershell:
         script: 
-          get-service | where {$_.name -eq "{{ target_service }}"} | restart-service -force
+          get-service -name "{{ target_service }}" | restart-service -force
       register: script_return
     - debug:
         msg: "{{ script_return }}"
