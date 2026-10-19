@@ -7,8 +7,7 @@
         hostname: "{{ target_host }}"
         group: dynamic
 - hosts: dynamic
-  become: false
-  gather_facts: false
+ 
 - name: Run PowerShell
   ansible.windows.win_powershell:
     script:
