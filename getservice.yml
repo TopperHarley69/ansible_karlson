@@ -6,7 +6,7 @@
     - add_host:
         hostname: "{{ target_host }}"
         group: dynamic
-- hosts: dynamic
+  - hosts: dynamic
  
   - name: Run PowerShell
     ansible.windows.win_powershell:
