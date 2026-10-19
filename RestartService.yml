@@ -1,6 +1,7 @@
-#- name: Restart service  hosts: localhost
+#- name: Restart service  
 ---
-- gather_facts: false
+- hosts: localhost
+  gather_facts: false
   become: false
   tasks:
 
