@@ -4,7 +4,7 @@
   tasks:
     - name: Find files
       ansible.builtin.find:
-        path: /var/lib/software/oob/*.*
+        paths: /var/lib/software/oob/*.*
         register: find_results
     - name: Remove files
       ansible.builtin.file
