@@ -5,7 +5,7 @@
     - name: Remove file
       ansible.builtin.file:
         path: /var/lib/software/oob/windows10.0-kb5129237-x64_e93c6b857e895024aeee1e023db638f8c7619096.msu
-        register: absent
+        state: absent
     - name: Fetch cab file
       get_url:
         url: https://catalog.s.download.windowsupdate.com/c/msdownload/update/software/updt/2026/09/windows10.0-kb5129237-x64_e93c6b857e895024aeee1e023db638f8c7619096.msu
