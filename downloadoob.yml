@@ -3,7 +3,7 @@
   gather_facts: no
   tasks:
     - name: Remove file
-      ansible.builtin.find:
+      ansible.builtin.file:
         path: /var/lib/software/oob/indows10.0-kb5129237-x64_e93c6b857e895024aeee1e023db638f8c7619096.msu
         register: absent
     - name: Fetch cab file
