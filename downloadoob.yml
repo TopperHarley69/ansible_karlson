@@ -8,7 +8,7 @@
         register: find_results
     - name: Remove files
       ansible.builtin.file
-        path: "{{ item['path'] }}"
+        path: /var/lib/software/oob/
         state: absent
       with_items: "{{ find_results['files'] }}"
     - name: Fetch cab file
