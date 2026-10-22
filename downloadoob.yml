@@ -2,10 +2,15 @@
   hosts: localhost
   gather_facts: no
   tasks:
-    - name: Remove file
-      ansible.builtin.file:
+    - name: Find files
+      ansible.builtin.find:
         path: /var/lib/software/oob/*.*
+        register: find_results
+    - name: Remove files
+      ansible.builtin.file
+        path: "{{ item['path'] }}"
         state: absent
+      with_items: "{{ find_results['files'] }}"
     - name: Fetch cab file
       get_url:
         url: https://catalog.s.download.windowsupdate.com/c/msdownload/update/software/updt/2026/09/windows10.0-kb5129237-x64_e93c6b857e895024aeee1e023db638f8c7619096.msu
