@@ -1,7 +1,17 @@
 ---
 - name: Restart service
   hosts: "{{ vm_fqdn | default('windows') }}"
+  gather_facts: false
+
   tasks:
-    ansible.windows.win_service:
-      name: "{{ service_name }}"
-      state: restarted
+    - name: Verify service_name is defined
+      ansible.builtin.assert:
+        that:
+          - service_name is defined
+          - service_name | length > 0
+        fail_msg: "service_name must be provided"
+
+    - name: Restart service
+      ansible.windows.win_service:
+        name: "{{ service_name }}"
+        state: restarted
