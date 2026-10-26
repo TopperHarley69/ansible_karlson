@@ -1,0 +1,4 @@
+- name: Restart service
+  ansible.windows.win_service:
+    name: "{{ service_name }}"
+    state: restarted
