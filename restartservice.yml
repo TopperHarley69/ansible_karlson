@@ -1,3 +1,4 @@
+---
 - name: Restart service
   hosts: "{{ vm_fqdn | default('windows') }}"
   tasks:
