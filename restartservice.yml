@@ -1,5 +1,6 @@
 - name: Restart service
   hosts: "{{ vm_fqdn | default('windows') }}"
-  ansible.windows.win_service:
-    name: "{{ service_name }}"
-    state: restarted
+  tasks:
+    ansible.windows.win_service:
+      name: "{{ service_name }}"
+      state: restarted
