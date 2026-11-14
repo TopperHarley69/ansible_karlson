@@ -6,9 +6,9 @@
     - name: Copy SW
       ansible.windows.win_copy:
         src: /var/lib/software/oob/windows11.0-kb5136489-x64_258bf1c4013bd40f3f019fb11e41b5acc403614f.msu
-        dest: c:\temp
+        dest: c:\windows\temp
     - name: Install hotfix without validating the KB and Identifier
       ansible.windows.win_hotfix:
-        source: C:\temp\windows11.0-kb5136489-x64_258bf1c4013bd40f3f019fb11e41b5acc403614f.msu
+        source: C:\windows\temp\windows11.0-kb5136489-x64_258bf1c4013bd40f3f019fb11e41b5acc403614f.msu
         state: present
       register: hotfix_install
