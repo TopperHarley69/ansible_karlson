@@ -1,7 +1,7 @@
 ---
 - name: Install OOB patch
   hosts: deploys
-  gather_facts: no
+  gather_facts: yes
   tasks:
     #- name: Copy SW
     #  ansible.windows.win_copy:
