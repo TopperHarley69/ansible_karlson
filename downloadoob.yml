@@ -4,10 +4,10 @@
   tasks:
     - name: Remove file
       ansible.builtin.file:
-        path: /var/lib/software/oob/windows10.0-kb5129237-x64_e93c6b857e895024aeee1e023db638f8c7619096.msu
+        path: /var/lib/software/oob/windows11.0-kb5136489-x64_258bf1c4013bd40f3f019fb11e41b5acc403614f.msu
         state: absent
     - name: Fetch cab file
       get_url:
         url: https://catalog.sf.dl.delivery.mp.microsoft.com/filestreamingservice/files/a4ec9457-0566-401c-84b1-db1754bac58b/public/windows11.0-kb5136489-x64_258bf1c4013bd40f3f019fb11e41b5acc403614f.msu
-        dest: /var/lib/software/oob/windows10.0-kb5129237-x64_e93c6b857e895024aeee1e023db638f8c7619096.msu
+        dest: /var/lib/software/oob/windows11.0-kb5136489-x64_258bf1c4013bd40f3f019fb11e41b5acc403614f.msu
         mode: "0644"
