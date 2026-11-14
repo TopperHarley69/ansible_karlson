@@ -1,0 +1,14 @@
+---
+- name: Install OOB patch
+  hosts: deploys
+  gather_facts: no
+  tasks:
+    - name: Copy SW
+      ansible.windows.win_copy:
+        src: /var/lib/software/windows11.0-kb5043080-x64_953449672073f8fb99badb4cc6d5d7849b9c83e8.msu
+        dest: c:\temp
+    - name: InstallOOB
+      win_package:
+        path: c:\temp\windows11.0-kb5043080-x64_953449672073f8fb99badb4cc6d5d7849b9c83e8.msu 
+        state: present
+        arguments: /qn
