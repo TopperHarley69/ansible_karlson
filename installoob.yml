@@ -5,10 +5,10 @@
   tasks:
     - name: Copy SW
       ansible.windows.win_copy:
-        src: /var/lib/software/oob/windows11.0-kb5043080-x64_953449672073f8fb99badb4cc6d5d7849b9c83e8.msu
+        src: /var/lib/software/oob/windows11.0-kb5136489-x64_258bf1c4013bd40f3f019fb11e41b5acc403614f.msu
         dest: c:\temp
     - name: InstallOOB
       win_package:
-        path: c:\temp\windows11.0-kb5043080-x64_953449672073f8fb99badb4cc6d5d7849b9c83e8.msu 
+        path: c:\temp\windows11.0-kb5136489-x64_258bf1c4013bd40f3f019fb11e41b5acc403614f.msu 
         state: present
         arguments: /qn
