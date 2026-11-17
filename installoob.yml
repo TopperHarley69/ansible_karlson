@@ -14,13 +14,13 @@
 
         if ($extension -eq '.msu') {
           $exe = 'wusa.exe'
-          $args = @($packagePath, '/quiet', '/norestart')
+          $args = @($packagePath, '/quiet', '/restart')
         } elseif ($extension -eq '.msi') {
           $exe = 'msiexec.exe'
-          $args = @('/i', $packagePath, '/quiet', '/norestart')
+          $args = @('/i', $packagePath, '/quiet', '/restart')
         } else {
           $exe = 'dism.exe'
-          $args = @('/Online', '/Add-Package', "/PackagePath:$packagePath", '/Quiet', '/NoRestart')
+          $args = @('/Online', '/Add-Package', "/PackagePath:$packagePath", '/Quiet', '/Restart')
         }
 
         $process = Start-Process -FilePath $exe -ArgumentList $args -Wait -PassThru
